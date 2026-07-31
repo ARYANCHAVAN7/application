@@ -26,6 +26,14 @@
             android:name=".HospitalActivity"
             android:exported="false"
             android:label="@string/section_resource_management" />
+
+        <activity
+            android:name="com.example.myapplication.RegistrationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.myapplication.DashboardActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

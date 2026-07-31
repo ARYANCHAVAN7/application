@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.example.application.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 
