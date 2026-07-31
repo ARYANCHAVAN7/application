@@ -1,0 +1,4 @@
+- [x] Create `HospitalActivity.java`
+- [x] Register `HospitalActivity` in `AndroidManifest.xml`
+- [x] Update `MainActivity.java` with Login logic
+- [x] Add Logout logic to `HospitalActivity.java`

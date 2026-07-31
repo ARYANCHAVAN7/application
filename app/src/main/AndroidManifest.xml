@@ -21,6 +21,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".HospitalActivity"
+            android:exported="false"
+            android:label="@string/section_resource_management" />
     </application>
 
 </manifest>
