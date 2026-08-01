@@ -1,3 +1,4 @@
-- [x] Remove shield emoji and update "SURAKSHA" color to blue in `starting_page.xml`
-- [x] Center the branding and selection card vertically
-- [x] Verify UI balance on device
+- [x] Add Google Login UI to `user_login.xml`
+- [x] Implement Google Login logic and shake effect in `UserLoginActivity.java`
+- [x] Implement simulated account selection and shake effect in `MainActivity.java`
+- [x] Verify UI and functionality on device

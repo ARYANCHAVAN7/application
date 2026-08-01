@@ -23,6 +23,7 @@ public class UserLoginActivity extends AppCompatActivity {
         EditText etEmail = findViewById(R.id.etEmail);
         EditText etPassword = findViewById(R.id.etPassword);
         Button btnSignIn = findViewById(R.id.btnSignIn);
+        Button btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         TextView tvRegister = findViewById(R.id.tvRegister);
 
         // Entrance Animation
@@ -45,6 +46,15 @@ public class UserLoginActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+
+        if (btnGoogleLogin != null) {
+            btnGoogleLogin.setOnClickListener(v -> {
+                // Shake effect for feedback
+                Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
+                loginCard.startAnimation(shake);
+                Toast.makeText(this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
+            });
+        }
 
         tvRegister.setOnClickListener(v -> {
             Intent intent = new Intent(this, RegistrationActivity.class);

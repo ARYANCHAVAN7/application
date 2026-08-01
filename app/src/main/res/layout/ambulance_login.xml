@@ -27,16 +27,16 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🛡🚑"
-                android:textSize="40sp"
+                android:text="🚑"
+                android:textSize="56sp"
                 android:layout_marginBottom="8dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="SURAKSHA"
-                android:textColor="@color/blue_accent"
-                android:textSize="26sp"
+                android:textColor="@color/role_selected"
+                android:textSize="32sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.08" />
 
@@ -51,6 +51,7 @@
 
         <!-- ===== Login Card ===== -->
         <LinearLayout
+            android:id="@+id/loginCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -105,6 +106,31 @@
                 android:text="Login"
                 android:textColor="@color/white"
                 android:textSize="16sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:text="@string/label_or"
+                android:textColor="#4A90E2"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnAmbulanceGoogleLogin"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_pill_outline"
+                android:backgroundTint="#4A90E2"
+                android:gravity="center"
+                android:text="@string/btn_google_login"
+                android:textColor="#4A90E2"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:clickable="true"
                 android:focusable="true" />

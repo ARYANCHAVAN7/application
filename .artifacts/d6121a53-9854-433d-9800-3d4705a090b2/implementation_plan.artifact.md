@@ -1,28 +1,29 @@
-# Implementation Plan - Re-balancing Starting Page Layout
+# Implementation Plan - Google Login & Shake Effect Integration
 
-I will remove the shield logo from the "Welcome to Suraksha" screen and adjust the layout to eliminate the "empty" feeling by centering the main content.
-
-## User Review Required
-
-> [!NOTE]
-> I will be removing the 🛡️ emoji and centering the branding and role selection card to create a more compact and balanced interface.
+I will integrate the "Continue with Google" functionality into both User and Hospital login screens, complete with the requested "shake" feedback and a simulated account selection for the Hospital portal.
 
 ## Proposed Changes
 
 ### [Component Name] - Layouts
 
-#### [MODIFY] [starting_page.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/res/layout/starting_page.xml)
-- **Logo Update**: Remove the `🛡️` emoji, leaving only the `🚑` (or a more centered brand icon).
-- **Layout Re-balancing**:
-    - Remove the fixed top margin (`80dp`) from `headerSection`.
-    - Constrain `headerSection` to the top of `loginCard`.
-    - Constrain `loginCard` to be centered vertically in the screen (instead of pinned to the bottom).
-    - This will group the branding and selection card together in the center of the screen, making the page feel full and intentional.
+#### [MODIFY] [user_login.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/res/layout/user_login.xml)
+- Add a "Continue with Google" button below the "Sign In" button, matching the design of the Hospital login screen.
+- Add an "OR" divider text between the login methods.
+
+### [Component Name] - Activity Implementation
+
+#### [MODIFY] [MainActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/MainActivity.java)
+- Implement a click listener for the Google Login button (`button3`).
+- When clicked, show a simulated "Select Account" dialog (e.g., a `Toast` followed by a dummy selection or a `AlertDialog` with mock accounts).
+- If the user tries to proceed without "selecting," trigger the `R.anim.shake` on the `loginCard`.
+
+#### [MODIFY] [UserLoginActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/UserLoginActivity.java)
+- Implement a click listener for the new Google Login button.
+- Apply the same "shake" effect to the `loginCard` for consistency.
 
 ## Verification Plan
 
 ### Manual Verification
 - Deploy to the device.
-- Verify that the branding and card are now centered and the page no longer feels "empty".
-- Ensure the staggered animations still function correctly in the new layout.
-- Take a screenshot to confirm the improved balance.
+- **User Login**: Verify the new Google button exists and triggers a shake effect.
+- **Hospital Login**: Verify the Google button triggers "options" (simulated account selection) and the shake effect works as expected.
