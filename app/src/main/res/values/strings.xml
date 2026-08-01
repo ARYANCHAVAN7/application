@@ -68,8 +68,9 @@
     <string name="emoji_ambulance">🚑</string>
 
     <!-- Starting Page -->
-    <string name="title_sign_in">Sign In</string>
-    <string name="subtitle_sign_in">Enter your details to continue</string>
+    <string name="title_select_role">Welcome to Suraksha</string>
+    <string name="subtitle_select_role">Select your role to continue</string>
+    <string name="btn_continue">Continue</string>
     <string name="role_user">User</string>
     <string name="role_hospital">Hospital</string>
     <string name="role_admin">Ambulance</string>

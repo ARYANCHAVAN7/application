@@ -1,21 +1,28 @@
-# Implementation Plan - Add Registration Success Message
+# Implementation Plan - Re-balancing Starting Page Layout
 
-I will add a "Registration Successful" message when the user clicks the "Register Hospital" button in the `HospitalRegisterActivity`.
+I will remove the shield logo from the "Welcome to Suraksha" screen and adjust the layout to eliminate the "empty" feeling by centering the main content.
+
+## User Review Required
+
+> [!NOTE]
+> I will be removing the 🛡️ emoji and centering the branding and role selection card to create a more compact and balanced interface.
 
 ## Proposed Changes
 
-### [Component Name] - Activity Implementation
+### [Component Name] - Layouts
 
-#### [MODIFY] [HospitalRegisterActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/HospitalRegisterActivity.java)
-- Implement `btnRegister` click listener.
-- Show a `Toast` message: "Hospital Registered Successfully!".
-- Optionally, return to the login screen after a short delay or immediately. I will implement a simple finish() after the toast.
+#### [MODIFY] [starting_page.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/res/layout/starting_page.xml)
+- **Logo Update**: Remove the `🛡️` emoji, leaving only the `🚑` (or a more centered brand icon).
+- **Layout Re-balancing**:
+    - Remove the fixed top margin (`80dp`) from `headerSection`.
+    - Constrain `headerSection` to the top of `loginCard`.
+    - Constrain `loginCard` to be centered vertically in the screen (instead of pinned to the bottom).
+    - This will group the branding and selection card together in the center of the screen, making the page feel full and intentional.
 
 ## Verification Plan
 
 ### Manual Verification
-- Deploy the app.
-- Navigate to the Registration screen.
-- Fill in the details (optional, since there's no backend yet).
-- Click "Register Hospital".
-- Verify that the toast "Hospital Registered Successfully!" appears and the app returns to the login screen.
+- Deploy to the device.
+- Verify that the branding and card are now centered and the page no longer feels "empty".
+- Ensure the staggered animations still function correctly in the new layout.
+- Take a screenshot to confirm the improved balance.

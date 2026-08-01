@@ -1,3 +1,3 @@
-- [x] Implement `btnRegister` click listener in `HospitalRegisterActivity.java`
-- [x] Show success Toast and finish activity on click
-- [x] Verify the implementation on device
+- [x] Remove shield emoji and update "SURAKSHA" color to blue in `starting_page.xml`
+- [x] Center the branding and selection card vertically
+- [x] Verify UI balance on device

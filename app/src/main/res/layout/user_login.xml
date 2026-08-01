@@ -2,11 +2,9 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/oye"
-    tools:context=".MainActivity">
+    android:background="@drawable/hospitaldash">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/loginCard"
@@ -30,21 +28,18 @@
             android:padding="24dp">
 
             <TextView
-                android:id="@+id/tvPortalTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/hospital_portal_title"
-                android:textColor="#0D3B66"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-condensed-medium"
-                android:letterSpacing="0.02" />
+                android:text="User Login"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Secure access for hospital staff"
+                android:text="Welcome back! Please sign in to your account"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -52,7 +47,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                android:text="@string/hint_email_or_phone"
+                android:text="@string/label_email_address"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -62,19 +57,18 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_signin"
-                android:hint="@string/hint_email_or_phone"
+                android:hint="abc@gmail.com"
                 android:inputType="textEmailAddress"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp"
-                android:autofillHints="emailAddress" />
+                android:textSize="14sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/hint_password"
+                android:text="@string/label_password"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
@@ -88,58 +82,48 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_input_signin"
-                    android:hint="@string/hint_password"
+                    android:hint="••••••••"
                     android:inputType="textPassword"
                     android:paddingStart="16dp"
                     android:paddingEnd="48dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
-                    android:autofillHints="password" />
+                    android:textSize="14sp" />
             </FrameLayout>
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/btnSignIn"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="55dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/btn_login"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#1E6FD9"
-                android:textAllCaps="true"
+                android:backgroundTint="@color/nice_role_selected"
+                android:text="Sign In"
+                android:textColor="@color/white"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp" />
 
-            <TextView
-                android:id="@+id/textView5"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/label_or"
-                android:textColor="#4A90E2"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/button3"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginTop="16dp"
-                android:text="@string/btn_google_login"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#4A90E2"
-                android:textAllCaps="false"
-                app:cornerRadius="12dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/footer_no_account"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
 
-            <Button
-                android:id="@+id/button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/btn_sign_up"
-                android:textColor="#0D3B66"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:backgroundTint="@android:color/transparent" />
+                <TextView
+                    android:id="@+id/tvRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/footer_register_here"
+                    android:textColor="@color/blue_accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
