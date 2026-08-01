@@ -71,5 +71,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void triggerSos() {
         Toast.makeText(this, "SOS Triggered! Connecting to nearest hospital…", Toast.LENGTH_LONG).show();
+
     }
 }

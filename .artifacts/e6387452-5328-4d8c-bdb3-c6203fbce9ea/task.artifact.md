@@ -1,4 +1,6 @@
-- `[x]` Modify `gradle.properties` to resolve file locks
-- `[x]` Stop Gradle Daemons (via IDE Sync)
-- `[ ]` Clean project (Requires IDE restart)
-- `[ ]` Rebuild project
+- `[x]` Create implementation plan
+- `[x]` Add advanced features to Ambulance Dashboard
+    - `[x]` Add new strings to `strings.xml`
+    - `[x]` Implement collapsible medical info in `ambulence_dashboard.xml`
+    - `[x]` Add toggle logic and enable traffic layer in `AmbulanceActivity.java`
+- `[x]` Verify changes and create walkthrough
