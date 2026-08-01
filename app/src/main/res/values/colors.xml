@@ -30,4 +30,16 @@
     <color name="shield_muted">#B7C6DE</color>
     <color name="blue_accent">#2E7DE0</color>
     <color name="blue_accent_bg">#E4EEFC</color>
+    <color name="dark_bg">#090A0D</color>
+    <color name="dark_card">#121418</color>
+    <color name="role_selected">#1E6FD9</color>
+    <color name="role_unselected">#1B1D22</color>
+    <color name="role_border">#2A2E35</color>
+    <color name="input_bg">#E9F1FE</color>
+    <color name="link_blue">#4A90E2</color>
+    <color name="nice_card_bg">#E6FFFFFF</color>
+    <color name="nice_role_selected">#1E6FD9</color>
+    <color name="nice_role_unselected">#F0F4F8</color>
+    <color name="nice_role_border">#DDE6F0</color>
+    <color name="nice_input_bg">#F4F8FD</color>
 </resources>

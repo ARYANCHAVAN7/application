@@ -1,5 +1,6 @@
-package com.example.myapplication; // ← change to your actual package name
+package com.example.myapplication;
 
+import com.example.application.R;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;

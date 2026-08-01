@@ -1,0 +1,4 @@
+- `[x]` Modify `gradle.properties` to resolve file locks
+- `[x]` Stop Gradle Daemons (via IDE Sync)
+- `[ ]` Clean project (Requires IDE restart)
+- `[ ]` Rebuild project
