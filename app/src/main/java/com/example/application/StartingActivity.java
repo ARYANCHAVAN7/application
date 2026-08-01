@@ -41,7 +41,7 @@ public class StartingActivity extends AppCompatActivity {
 
         roleUser.setOnClickListener(v -> selectRole("User"));
         roleHospital.setOnClickListener(v -> selectRole("Hospital"));
-        roleAdmin.setOnClickListener(v -> selectRole("Admin"));
+        roleAdmin.setOnClickListener(v -> selectRole("Ambulance"));
 
         btnSignIn.setOnClickListener(v -> {
             String email = etEmail.getText().toString();
@@ -66,7 +66,8 @@ public class StartingActivity extends AppCompatActivity {
         });
 
         tvRegister.setOnClickListener(v -> {
-            Toast.makeText(this, "Registration coming soon!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, com.example.myapplication.RegistrationActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -89,7 +90,7 @@ public class StartingActivity extends AppCompatActivity {
         } else if (role.equals("Hospital")) {
             updateRoleView(roleHospital, true);
             roleHospital.startAnimation(scaleUp);
-        } else if (role.equals("Admin")) {
+        } else if (role.equals("Ambulance")) {
             updateRoleView(roleAdmin, true);
             roleAdmin.startAnimation(scaleUp);
         }

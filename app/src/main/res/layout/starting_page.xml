@@ -66,7 +66,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="👤"
+                        android:text="@string/emoji_user_role"
                         android:textSize="20sp" />
 
                     <TextView
@@ -98,7 +98,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="🏥"
+                        android:text="@string/emoji_hospital_role"
                         android:textSize="20sp" />
 
                     <TextView
@@ -114,7 +114,7 @@
                     android:layout_width="12dp"
                     android:layout_height="0dp" />
 
-                <!-- Admin Role -->
+                <!-- Ambulance Role -->
                 <LinearLayout
                     android:id="@+id/roleAdmin"
                     android:layout_width="0dp"
@@ -130,7 +130,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⚙️"
+                        android:text="@string/emoji_ambulance_role"
                         android:textSize="20sp" />
 
                     <TextView
