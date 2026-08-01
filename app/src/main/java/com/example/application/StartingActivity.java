@@ -66,7 +66,7 @@ public class StartingActivity extends AppCompatActivity {
         });
 
         tvRegister.setOnClickListener(v -> {
-            Intent intent = new Intent(this, com.example.myapplication.RegistrationActivity.class);
+            Intent intent = new Intent(this, RegistrationActivity.class);
             startActivity(intent);
         });
     }

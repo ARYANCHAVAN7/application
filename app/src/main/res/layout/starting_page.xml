@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/hospitaldash">
+    android:background="@drawable/hospitaldash"
+    tools:context=".StartingActivity">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/loginCard"
@@ -48,7 +49,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
                 <!-- User Role -->
                 <LinearLayout
@@ -157,12 +159,13 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_input_signin"
-                android:hint="abc@gmail.com"
+                android:hint="@string/hint_email_sample"
                 android:inputType="textEmailAddress"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:textColor="@color/text_primary"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:autofillHints="emailAddress" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -182,12 +185,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@drawable/bg_input_signin"
-                    android:hint="••••••••"
+                    android:hint="@string/hint_password_dots"
                     android:inputType="textPassword"
                     android:paddingStart="16dp"
                     android:paddingEnd="48dp"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
+                    android:textSize="14sp"
+                    android:autofillHints="password" />
 
                 <ImageView
                     android:layout_width="24dp"
@@ -196,21 +200,26 @@
                     android:layout_marginEnd="16dp"
                     android:alpha="0.5"
                     android:src="@android:drawable/ic_menu_view"
-                    app:tint="@color/text_secondary" />
+                    app:tint="@color/text_secondary"
+                    android:contentDescription="@string/desc_view_password" />
             </FrameLayout>
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <CheckBox
                     android:id="@+id/cbRememberMe"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:buttonTint="@color/text_secondary"
                     android:minHeight="0dp"
                     android:paddingStart="4dp"
+                    android:paddingEnd="0dp"
                     android:text="@string/label_remember_me"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
@@ -218,12 +227,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
                     android:text="@string/label_forgot_password"
                     android:textColor="@color/blue_accent"
                     android:textSize="12sp" />
-            </RelativeLayout>
+            </LinearLayout>
 
             <Button
                 android:id="@+id/btnSignIn"

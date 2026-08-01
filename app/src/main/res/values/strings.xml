@@ -83,6 +83,10 @@
     <string name="footer_no_account">Don\'t have an account? </string>
     <string name="footer_register_here">Register here</string>
 
+    <string name="hint_email_sample">abc@gmail.com</string>
+    <string name="hint_password_dots">••••••••</string>
+    <string name="desc_view_password">View password</string>
+
     <!-- Registration Screen -->
     <string name="registration_logo_emoji">🛡🚑</string>
     <string name="app_name_uppercase">SURAKSHA</string>
