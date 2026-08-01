@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (btnSignUp != null) {
             btnSignUp.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, com.example.myapplication.RegistrationActivity.class);
+                Intent intent = new Intent(MainActivity.this, HospitalRegisterActivity.class);
                 startActivity(intent);
             });
         }

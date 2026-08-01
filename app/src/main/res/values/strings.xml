@@ -57,9 +57,10 @@
     <string name="btn_add_ambulance">Add Ambulance</string>
     <string name="section_live_tracking">Live Ambulance Tracking</string>
     <string name="desc_live_tracking">Live tracking will appear here once a driver starts their trip and begins broadcasting GPS.</string>
-    <string name="hint_email_or_phone">Email or Phone</string>
+    <string name="hint_email_or_phone">Hospital ID or Email</string>
     <string name="hint_password">Password</string>
-    <string name="btn_login">LOGIN</string>
+    <string name="btn_login">HOSPITAL LOGIN</string>
+    <string name="hospital_portal_title">Hospital Staff Portal</string>
     <string name="label_or">OR</string>
     <string name="btn_google_login">Continue with Google</string>
     <string name="btn_sign_up">Don\'t have an account? Sign Up</string>

@@ -1,30 +1,27 @@
-# Walkthrough - Login and Dashboard Connection
+# Walkthrough - Login and Registration Navigation
 
-I have connected the login page to the hospital dashboard. You can now log in using the login screen and logout from the dashboard.
+I have connected the Login screen with the Hospital Registration screen, allowing users to move back and forth between them.
 
 ## Changes Made
 
-### 1. Created [HospitalActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/HospitalActivity.java)
-This new activity manages the Hospital Dashboard. It:
-- Inflates the `hospital.xml` layout.
-- Sets up the **Logout** button (`btnLogout`) to close the activity and return to the login screen.
+### 1. Created [HospitalRegisterActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/HospitalRegisterActivity.java)
+- This is a new activity that manages the **Hospital Registration** screen.
+- It uses the `hospital_registration.xml` layout.
+- It includes a listener for `tvGoToLogin` to return to the Login screen.
 
 ### 2. Updated [MainActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/MainActivity.java)
-I restored the login functionality in `MainActivity`:
-- It now shows the `activity_main.xml` layout by default.
-- Added a click listener to the **LOGIN** button (`button2`).
-- Included a basic check to ensure the email and password fields are not empty before proceeding.
-- Launches `HospitalActivity` upon a successful "login".
+- Added a click listener to the **Sign Up** button (`R.id.button`).
+- When clicked, it launches the `HospitalRegisterActivity`.
 
-### 3. Updated [AndroidManifest.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/res/layout/hospital.xml)
-- Registered `HospitalActivity` so the application can navigate to it.
+### 3. Updated [AndroidManifest.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/AndroidManifest.xml)
+- Formally registered `HospitalRegisterActivity` so the system knows it exists and can launch it.
 
 ## How to Test
-1. **Run the app** on your device or emulator.
-2. You will see the Login screen.
-3. Enter any email and password.
-4. Click **LOGIN**. The Hospital Dashboard will open.
-5. Click **Logout** at the top right of the dashboard to return to the Login screen.
+1. **Launch the app** to the Login screen.
+2. Click the **Don't have an account? Sign Up** button at the bottom.
+3. Observe that you are taken to the **Hospital Registration** page.
+4. Click the **Already registered? Login** text at the bottom.
+5. Observe that you are taken back to the **Login** page.
 
-> [!NOTE]
-> For this demonstration, any non-empty email and password will allow you to log in. In a real application, you would verify these credentials against a database or authentication service.
+> [!TIP]
+> Navigating back using `finish()` (on the Login text) is more efficient than starting a new `MainActivity` instance, as it simply closes the current screen and reveals the previous one.

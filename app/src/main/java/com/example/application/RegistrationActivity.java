@@ -1,14 +1,11 @@
-package com.example.myapplication;
+package com.example.application;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.EditText;
 import android.widget.TextView;
-import com.example.application.MainActivity;
-import com.example.application.R;
 import android.widget.Toast;
-
 
 import androidx.appcompat.app.AppCompatActivity;
 

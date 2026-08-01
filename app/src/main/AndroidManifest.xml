@@ -32,11 +32,15 @@
             android:label="@string/section_resource_management" />
 
         <activity
-            android:name="com.example.myapplication.RegistrationActivity"
+            android:name=".HospitalRegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name="com.example.myapplication.DashboardActivity"
+            android:name=".RegistrationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DashboardActivity"
             android:exported="false" />
     </application>
 

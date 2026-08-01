@@ -1,28 +1,33 @@
-# Implementation Plan - Connect Login to Hospital Dashboard
+# Implementation Plan - Navigation between Login and Registration
 
-This plan outlines the steps to connect the login page to the hospital dashboard, allowing users to transition between them upon "login" and "logout".
+This plan connects the Login screen (`MainActivity`) and the Hospital Registration screen (`HospitalRegisterActivity`) using Android Intents.
+
+## User Review Required
+
+> [!IMPORTANT]
+> - A new activity class `HospitalRegisterActivity.java` will be created.
+> - The `AndroidManifest.xml` will be updated to register this new activity.
+> - The "Sign Up" button in `MainActivity` will navigate to the registration screen.
+> - The "Already registered? Login" text in the registration screen will return the user to the login screen.
 
 ## Proposed Changes
 
-### [NEW] HospitalActivity.java
-- Create a new activity to handle the hospital dashboard logic.
-- Set `hospital.xml` as its content view.
-- Implement the "Logout" button functionality to return to the login screen.
+### [NEW] [HospitalRegisterActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/HospitalRegisterActivity.java)
+- Implement `onCreate` to set the content view to `R.layout.hospital_registration`.
+- Add a click listener to `tvGoToLogin` that calls `finish()` to return to the Login screen.
 
-### [MODIFY] MainActivity.java
-- Revert the content view to `activity_main.xml`.
-- Add a click listener to the Login button (`button2`).
-- Launch `HospitalActivity` when the Login button is clicked.
+### [MODIFY] [MainActivity.java](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/java/com/example/application/MainActivity.java)
+- Find the "Sign Up" button (`R.id.button`).
+- Add a click listener to start `HospitalRegisterActivity`.
 
-### [MODIFY] AndroidManifest.xml
-- Register `HospitalActivity` so it can be launched by the system.
+### [MODIFY] [AndroidManifest.xml](file:///C:/Users/Dell/AndroidStudioProjects/application/app/src/main/AndroidManifest.xml)
+- Add the `<activity>` tag for `.HospitalRegisterActivity`.
 
 ## Verification Plan
 
 ### Manual Verification
-1. Launch the app.
-2. Observe the login screen (`activity_main.xml`).
-3. Click the **LOGIN** button.
-4. Verify that the Hospital Dashboard (`hospital.xml`) opens.
-5. Click the **Logout** button on the dashboard.
-6. Verify that the app returns to the login screen.
+1. Launch the app to the Login screen.
+2. Click the **Sign Up** button at the bottom.
+3. Verify that the **Hospital Registration** screen opens.
+4. Click the **Already registered? Login** text at the bottom.
+5. Verify that the app returns to the **Login** screen.

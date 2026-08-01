@@ -1,0 +1,3 @@
+- [x] Implement `btnRegister` click listener in `HospitalRegisterActivity.java`
+- [x] Show success Toast and finish activity on click
+- [x] Verify the implementation on device
