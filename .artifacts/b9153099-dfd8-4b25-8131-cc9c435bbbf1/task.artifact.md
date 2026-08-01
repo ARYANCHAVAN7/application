@@ -1,4 +1,5 @@
-- [x] Create `HospitalActivity.java`
-- [x] Register `HospitalActivity` in `AndroidManifest.xml`
-- [x] Update `MainActivity.java` with Login logic
-- [x] Add Logout logic to `HospitalActivity.java`
+- [x] Create `HospitalRegisterActivity.java`
+- [x] Register `HospitalRegisterActivity` in `AndroidManifest.xml`
+- [x] Connect "Sign Up" button in `MainActivity.java`
+- [x] Connect "Already registered? Login" in `HospitalRegisterActivity.java`
+- [x] Verify navigation

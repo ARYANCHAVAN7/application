@@ -1,6 +1,5 @@
-package com.example.myapplication;
+package com.example.application;
 
-import com.example.application.R;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,7 +8,6 @@ import android.view.MotionEvent;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.example.application.R;
 
 import androidx.appcompat.app.AppCompatActivity;
 

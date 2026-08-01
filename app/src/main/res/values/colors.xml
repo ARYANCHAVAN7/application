@@ -42,4 +42,9 @@
     <color name="nice_role_unselected">#F0F4F8</color>
     <color name="nice_role_border">#DDE6F0</color>
     <color name="nice_input_bg">#F4F8FD</color>
+
+    <!-- Glassmorphism -->
+    <color name="glass_white">#BCFFFFFF</color>
+    <color name="glass_white_heavy">#E6FFFFFF</color>
+    <color name="glass_stroke">#33FFFFFF</color>
 </resources>

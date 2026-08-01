@@ -25,6 +25,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/profileArea"
                 android:text="@string/dashboard_logo"
                 android:textColor="@color/blue_accent"
                 android:textSize="20sp"
@@ -90,7 +92,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="20dp"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -239,7 +242,8 @@
             android:orientation="horizontal"
             android:paddingStart="20dp"
             android:paddingEnd="20dp"
-            android:paddingBottom="10dp">
+            android:paddingBottom="10dp"
+            android:baselineAligned="false">
 
             <!-- Medical Card -->
             <LinearLayout
@@ -288,7 +292,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/label_blood_group_header"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -307,7 +311,7 @@
                     android:layout_marginTop="12dp"
                     android:text="@string/emergency_contact_header"
                     android:textColor="@color/text_secondary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -332,14 +336,13 @@
             <!-- Status & Quick Action -->
             <LinearLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_weight="0.8"
                 android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:background="@drawable/bg_card_white"
                     android:elevation="2dp"
@@ -352,7 +355,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/current_status_header"
                         android:textColor="@color/text_secondary"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -372,8 +375,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
                     android:background="@color/blue_accent"
                     android:backgroundTint="@color/blue_accent"
                     android:elevation="2dp"
@@ -386,7 +388,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/account_details_header"
                         android:textColor="@color/white"
-                        android:textSize="10sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <View
@@ -513,8 +515,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_toEndOf="@id/contactIcon"
+                    android:layout_toStartOf="@+id/callNowBtn"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="12dp"
+                    android:layout_marginEnd="8dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -580,7 +584,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp">
+                android:padding="8dp"
+                android:baselineAligned="false">
 
                 <TextView
                     android:layout_width="0dp"
@@ -588,7 +593,7 @@
                     android:layout_weight="1"
                     android:text="@string/col_date"
                     android:textColor="@color/text_tertiary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -597,7 +602,7 @@
                     android:layout_weight="1.5"
                     android:text="@string/col_hospital"
                     android:textColor="@color/text_tertiary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -607,7 +612,7 @@
                     android:gravity="end"
                     android:text="@string/col_status"
                     android:textColor="@color/text_tertiary"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
 

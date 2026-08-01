@@ -57,14 +57,16 @@
     <string name="btn_add_ambulance">Add Ambulance</string>
     <string name="section_live_tracking">Live Ambulance Tracking</string>
     <string name="desc_live_tracking">Live tracking will appear here once a driver starts their trip and begins broadcasting GPS.</string>
-    <string name="hint_email_or_phone">Email or Phone</string>
+    <string name="hint_email_or_phone">Hospital ID or Email</string>
     <string name="hint_password">Password</string>
-    <string name="btn_login">LOGIN</string>
+    <string name="btn_login">HOSPITAL LOGIN</string>
+    <string name="hospital_portal_title">Hospital Staff Portal</string>
     <string name="label_or">OR</string>
     <string name="btn_google_login">Continue with Google</string>
     <string name="btn_sign_up">Don\'t have an account? Sign Up</string>
     <string name="emoji_hospital">🏥</string>
     <string name="emoji_ambulance">🚑</string>
+<<<<<<< HEAD
     <string name="title_sign_in">Sign In</string>
     <string name="subtitle_sign_in">Select your role to continue</string>
     <string name="role_user">User</string>
@@ -73,10 +75,27 @@
     <string name="label_email_address">Email Address</string>
     <string name="label_password">Password</string>
     <string name="label_remember_me">Remember me</string>
+=======
+
+    <!-- Starting Page -->
+    <string name="title_select_role">Welcome to Suraksha</string>
+    <string name="subtitle_select_role">Select your role to continue</string>
+    <string name="btn_continue">Continue</string>
+    <string name="role_user">User</string>
+    <string name="role_hospital">Hospital</string>
+    <string name="role_admin">Ambulance</string>
+    <string name="emoji_user_role">👤</string>
+    <string name="emoji_hospital_role">🏥</string>
+    <string name="emoji_ambulance_role">🚑</string>
+    <string name="label_email_address">Email Address</string>
+    <string name="label_password">Password</string>
+    <string name="label_remember_me">Remember Me</string>
+>>>>>>> baafebc2406fa7ebeb3cbb2ae2018b8320f45c4f
     <string name="label_forgot_password">Forgot Password?</string>
     <string name="footer_no_account">Don\'t have an account? </string>
     <string name="footer_register_here">Register here</string>
 
+<<<<<<< HEAD
     <!-- Ambulance Dashboard Strings -->
     <string name="title_ambulance_dashboard">Ambulance Dashboard</string>
     <string name="label_driver_status">DRIVER STATUS:</string>
@@ -94,4 +113,80 @@
     <string name="label_allergies_short">Allergies:</string>
     <string name="label_view_vitals">VIEW VITALS</string>
     <string name="label_emergency_contact_short">Contact:</string>
+=======
+    <string name="hint_email_sample">abc@gmail.com</string>
+    <string name="hint_password_dots">••••••••</string>
+    <string name="desc_view_password">View password</string>
+
+    <!-- Registration Screen -->
+    <string name="registration_logo_emoji">🛡🚑</string>
+    <string name="app_name_uppercase">SURAKSHA</string>
+    <string name="app_tagline">— Smart Ambulance —</string>
+    <string name="create_account">Create Account</string>
+    <string name="registration_subtitle">Register to access emergency services</string>
+    <string name="label_full_name">Full Name</string>
+    <string name="hint_full_name">Enter your full name</string>
+    <string name="hint_email">you@example.com</string>
+    <string name="label_phone">Phone Number</string>
+    <string name="hint_phone">10-digit mobile number</string>
+    <string name="hint_password_create">Create a password</string>
+    <string name="label_confirm_password">Confirm Password</string>
+    <string name="hint_confirm_password">Re-enter your password</string>
+    <string name="hint_blood_group">e.g. B+</string>
+    <string name="label_emergency_name">Emergency Contact Name</string>
+    <string name="hint_emergency_name">Contact person\'s name</string>
+    <string name="label_emergency_phone">Emergency Contact Phone</string>
+    <string name="already_have_account">Already have an account? </string>
+    <string name="login_link">Login</string>
+
+    <!-- Dashboard Screen -->
+    <string name="dashboard_logo">🚑 SURAKSHA</string>
+    <string name="icon_user">👤</string>
+    <string name="label_user_name">User Name</string>
+    <string name="label_user_role">User</string>
+    <string name="btn_logout">⏻ Logout</string>
+    <string name="welcome_back">Welcome back,</string>
+    <string name="safety_priority">Your safety is our priority</string>
+    <string name="sample_date">Sunday, 26\nJuly</string>
+    <string name="label_emergency_sos">⚠  EMERGENCY SOS</string>
+    <string name="sos_title">Need Immediate\nHelp?</string>
+    <string name="sos_subtitle">One tap connects you to the nearest\nhospital and ambulance</string>
+    <string name="icon_warning">⚠</string>
+    <string name="sos_button_text">SOS</string>
+    <string name="sos_instruction">Press and hold for 2 seconds in real app</string>
+    <string name="icon_heart">❤</string>
+    <string name="medical_profile">Medical Profile</string>
+    <string name="label_blood_group_header">BLOOD GROUP</string>
+    <string name="sample_blood_group">O+</string>
+    <string name="emergency_contact_header">EMERGENCY CONTACT</string>
+    <string name="sample_contact_name">Contact Name</string>
+    <string name="sample_contact_phone">+91 98765 43210</string>
+    <string name="current_status_header">CURRENT STATUS</string>
+    <string name="status_safe">SAFE</string>
+    <string name="account_details_header">ACCOUNT DETAILS</string>
+    <string name="icon_clock">🕐</string>
+    <string name="emergency_status_label">Emergency Status</string>
+    <string name="icon_shield">🛡</string>
+    <string name="no_active_emergency">No Active Emergency</string>
+    <string name="safe_message">You\'re currently safe. The SOS button is\nready if needed.</string>
+    <string name="emergency_contacts_label">Emergency Contacts</string>
+    <string name="icon_phone">📞</string>
+    <string name="btn_call_now">Call Now</string>
+    <string name="emergency_history_label">Emergency History</string>
+    <string name="col_date">DATE</string>
+    <string name="col_hospital">HOSPITAL</string>
+    <string name="col_status">STATUS</string>
+    <string name="no_history_message">No emergency history yet</string>
+
+    <!-- Validation & Messages -->
+    <string name="error_full_name_required">Full name is required</string>
+    <string name="error_invalid_email">Enter a valid email</string>
+    <string name="error_invalid_phone">Enter a valid 10-digit phone number</string>
+    <string name="error_password_length">Password must be at least 6 characters</string>
+    <string name="error_password_mismatch">Passwords do not match</string>
+    <string name="error_blood_group_required">Blood group is required</string>
+    <string name="error_emergency_name_required">Emergency contact name is required</string>
+    <string name="error_emergency_phone_invalid">Enter a valid 10-digit emergency phone number</string>
+    <string name="msg_registration_success">Registered successfully! (frontend only)</string>
+>>>>>>> baafebc2406fa7ebeb3cbb2ae2018b8320f45c4f
 </resources>
