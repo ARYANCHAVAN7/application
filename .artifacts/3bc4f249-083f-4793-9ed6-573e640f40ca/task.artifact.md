@@ -1,0 +1,9 @@
+- [x] Add loading message string to `strings.xml`
+- [x] Create initial `loading_page.xml` layout
+- [x] Create `LoadingActivity.java`
+- [x] Update `AndroidManifest.xml`
+- [x] Verify initial functionality
+- [x] Enhance `loading_page.xml` with blurred background and branding
+- [x] Create `pulse.xml` animation
+- [x] Apply glassmorphism and entrance/pulse animations
+- [x] Verify UI improvements
