@@ -2,6 +2,7 @@ package com.example.application;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
@@ -11,17 +12,30 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
 
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class UserLoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "UserLoginActivity";
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private CredentialManager credentialManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +44,7 @@ public class UserLoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        credentialManager = CredentialManager.create(this);
 
         CardView loginCard = findViewById(R.id.loginCard);
         EditText etEmail = findViewById(R.id.etEmail);
@@ -76,7 +91,7 @@ public class UserLoginActivity extends AppCompatActivity {
         });
 
         if (btnGoogleLogin != null) {
-            btnGoogleLogin.setOnClickListener(v -> showSimulatedGoogleSignIn());
+            btnGoogleLogin.setOnClickListener(v -> performGoogleSignIn());
         }
 
         tvRegister.setOnClickListener(v -> {
@@ -85,22 +100,76 @@ public class UserLoginActivity extends AppCompatActivity {
         });
     }
 
-    private void showSimulatedGoogleSignIn() {
-        String[] accounts = {"demo_user@gmail.com", "test_account@gmail.com", "add_new_account..."};
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Choose an account")
-                .setItems(accounts, (dialog, which) -> {
-                    if (which < 2) {
-                        Toast.makeText(this, "Signing in with " + accounts[which], Toast.LENGTH_SHORT).show();
-                        // Simulate success
-                        Intent intent = new Intent(UserLoginActivity.this, DashboardActivity.class);
-                        startActivity(intent);
-                        finish();
+    private void performGoogleSignIn() {
+        String webClientId = "903850805671-u6m8lq1q1m1m1m1m1m1m1m1m1m1m1m1.apps.googleusercontent.com";
+
+        GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                .setFilterByAuthorizedAccounts(false)
+                .setServerClientId(webClientId)
+                .setAutoSelectEnabled(true)
+                .build();
+
+        GetCredentialRequest request = new GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build();
+
+        credentialManager.getCredentialAsync(this, request, null, Runnable::run, new androidx.credentials.CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+            @Override
+            public void onResult(GetCredentialResponse response) {
+                if (response.getCredential() instanceof GoogleIdTokenCredential) {
+                    GoogleIdTokenCredential googleIdTokenCredential = (GoogleIdTokenCredential) response.getCredential();
+                    firebaseAuthWithGoogle(googleIdTokenCredential.getIdToken());
+                }
+            }
+
+            @Override
+            public void onError(GetCredentialException e) {
+                Log.e(TAG, "Credential Manager Error: " + e.getMessage());
+                runOnUiThread(() -> Toast.makeText(UserLoginActivity.this, "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        });
+    }
+
+    private void firebaseAuthWithGoogle(String idToken) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
+                        String userId = mAuth.getCurrentUser().getUid();
+                        // For Google login, if profile doesn't exist, create it automatically
+                        db.collection("users").document(userId).get().addOnCompleteListener(dbTask -> {
+                            if (dbTask.isSuccessful() && dbTask.getResult() != null && !dbTask.getResult().exists()) {
+                                createBasicUserProfile(userId, mAuth.getCurrentUser().getDisplayName(), mAuth.getCurrentUser().getEmail());
+                            } else {
+                                checkUserRole(userId);
+                            }
+                        });
                     } else {
-                        Toast.makeText(this, "Google Sign-In requires configuration", Toast.LENGTH_LONG).show();
+                        Toast.makeText(UserLoginActivity.this, "Firebase Auth failed", Toast.LENGTH_SHORT).show();
                     }
+                });
+    }
+
+    private void createBasicUserProfile(String userId, String name, String email) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("fullName", name != null ? name : "Google User");
+        user.put("email", email);
+        user.put("role", "user");
+        user.put("phone", "");
+        user.put("bloodGroup", "");
+        user.put("emergencyName", "");
+        user.put("emergencyPhone", "");
+
+        db.collection("users").document(userId).set(user)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Profile created for " + email, Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(UserLoginActivity.this, DashboardActivity.class);
+                    startActivity(intent);
+                    finish();
                 })
-                .show();
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to create profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void checkUserRole(String userId) {

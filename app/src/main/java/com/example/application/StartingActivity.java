@@ -14,15 +14,22 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 public class StartingActivity extends AppCompatActivity {
 
     private LinearLayout roleUser, roleHospital, roleAdmin;
     private String selectedRole = "User"; // Default role
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.starting_page);
+
+        mAuth = FirebaseAuth.getInstance();
+        checkExistingSession();
 
         View headerSection = findViewById(R.id.headerSection);
         CardView loginCard = findViewById(R.id.loginCard);
@@ -94,6 +101,24 @@ public class StartingActivity extends AppCompatActivity {
         } else {
             layout.setBackgroundResource(R.drawable.bg_role_unselected);
             ((TextView) layout.getChildAt(1)).setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        }
+    }
+
+    private void checkExistingSession() {
+        if (mAuth.getCurrentUser() != null) {
+            String uid = mAuth.getCurrentUser().getUid();
+            FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String role = documentSnapshot.getString("role");
+                            if ("hospital".equals(role)) {
+                                startActivity(new Intent(this, HospitalActivity.class));
+                            } else {
+                                startActivity(new Intent(this, DashboardActivity.class));
+                            }
+                            finish();
+                        }
+                    });
         }
     }
 }

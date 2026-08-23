@@ -39,11 +39,9 @@
             android:padding="22dp">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/FieldLabel"
                 android:text="Hospital Name"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                android:layout_marginTop="0dp" />
 
             <EditText
                 android:id="@+id/etHospitalName"
@@ -59,11 +57,8 @@
                 android:layout_marginBottom="16dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Email"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="Email" />
 
             <EditText
                 android:id="@+id/etEmail"
@@ -80,11 +75,8 @@
                 android:layout_marginBottom="16dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phone Number"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="Phone Number" />
 
             <EditText
                 android:id="@+id/etPhone"
@@ -102,11 +94,8 @@
                 android:layout_marginBottom="16dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hospital Address"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="Hospital Address" />
 
             <EditText
                 android:id="@+id/etAddress"
@@ -122,11 +111,8 @@
                 android:layout_marginBottom="16dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="License / Registration Number"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="License / Registration Number" />
 
             <EditText
                 android:id="@+id/etLicenseNumber"
@@ -145,7 +131,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:baselineAligned="false">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -155,11 +142,9 @@
                     android:layout_marginEnd="8dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/FieldLabel"
                         android:text="Total Beds"
-                        android:textColor="#8CA6C2"
-                        android:textSize="13sp" />
+                        android:layout_marginTop="0dp" />
 
                     <EditText
                         android:id="@+id/etTotalBeds"
@@ -182,11 +167,9 @@
                     android:layout_marginStart="8dp">
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/FieldLabel"
                         android:text="Total Ambulances"
-                        android:textColor="#8CA6C2"
-                        android:textSize="13sp" />
+                        android:layout_marginTop="0dp" />
 
                     <EditText
                         android:id="@+id/etTotalAmbulances"
@@ -203,11 +186,8 @@
             </LinearLayout>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Password"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="Password" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -234,11 +214,8 @@
                 android:layout_height="16dp" />
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Confirm Password"
-                android:textColor="#8CA6C2"
-                android:textSize="13sp" />
+                style="@style/FieldLabel"
+                android:text="Confirm Password" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

@@ -49,12 +49,9 @@
                 android:textSize="14sp" />
 
             <TextView
+                style="@style/FieldLabel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/hint_email_or_phone"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:text="@string/hint_email_or_phone" />
 
             <EditText
                 android:id="@+id/etEmail"
@@ -71,12 +68,9 @@
                 android:autofillHints="emailAddress" />
 
             <TextView
+                style="@style/FieldLabel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/hint_password"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:text="@string/hint_password" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

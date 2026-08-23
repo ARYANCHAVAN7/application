@@ -33,29 +33,8 @@ public class AmbulanceLoginActivity extends AppCompatActivity {
         inputSecurityNumber = findViewById(R.id.inputSecurityNumber);
 
         TextView btnLogin = findViewById(R.id.btnAmbulanceLogin);
-        View btnGoogleLogin = findViewById(R.id.btnAmbulanceGoogleLogin);
 
         btnLogin.setOnClickListener(v -> handleLogin());
-
-        if (btnGoogleLogin != null) {
-            btnGoogleLogin.setOnClickListener(v -> showSimulatedGoogleSignIn());
-        }
-    }
-
-    private void showSimulatedGoogleSignIn() {
-        String[] hospitals = {"Seven Star Hospital", "City Care Clinic"};
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Select Hospital Fleet")
-                .setItems(hospitals, (dialog, which) -> {
-                    Toast.makeText(this, "Simulating Driver Login for " + hospitals[which], Toast.LENGTH_SHORT).show();
-                    // Simulate redirection to dashboard with dummy credentials
-                    Intent intent = new Intent(this, AmbulanceActivity.class);
-                    intent.putExtra("hospitalName", hospitals[which]);
-                    intent.putExtra("securityNumber", "DEMO-123");
-                    startActivity(intent);
-                    finish();
-                })
-                .show();
     }
 
     private void handleLogin() {

@@ -123,30 +123,6 @@
                 android:clickable="true"
                 android:focusable="true" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
-                android:text="@string/label_or"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/btnAmbulanceGoogleLogin"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_button_rounded"
-                android:backgroundTint="#F1F3F4"
-                android:gravity="center"
-                android:text="@string/btn_google_login"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:clickable="true"
-                android:focusable="true" />
         </LinearLayout>
 
     </LinearLayout>
