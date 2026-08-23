@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Crash logs
+*.log
+
+# IDE / Tooling artifacts
+.artifacts/
