@@ -176,5 +176,9 @@
     <string name="error_blood_group_required">Blood group is required</string>
     <string name="error_emergency_name_required">Emergency contact name is required</string>
     <string name="error_emergency_phone_invalid">Enter a valid 10-digit emergency phone number</string>
-    <string name="msg_registration_success">Registered successfully! (frontend only)</string>
+    <string name="msg_registration_success">Registered successfully!</string>
+    <string name="error_registration_failed">Registration failed: %s</string>
+    <string name="error_firestore_failed">Failed to save user data</string>
+    <string name="msg_login_success">Welcome back!</string>
+    <string name="error_login_failed">Login failed. Please check your credentials.</string>
 </resources>

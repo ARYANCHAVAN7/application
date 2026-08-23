@@ -12,15 +12,21 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 public class AmbulanceLoginActivity extends AppCompatActivity {
 
     private EditText inputHospitalName, inputSecurityNumber;
     private View loginCard;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.ambulance_login);
+
+        db = FirebaseFirestore.getInstance();
 
         loginCard = findViewById(R.id.loginCard);
         inputHospitalName = findViewById(R.id.inputHospitalName);
@@ -33,34 +39,11 @@ public class AmbulanceLoginActivity extends AppCompatActivity {
 
         if (btnGoogleLogin != null) {
             btnGoogleLogin.setOnClickListener(v -> {
-                // Shake effect for feedback
-                if (loginCard != null) {
-                    Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
-                    loginCard.startAnimation(shake);
-                }
-
-                // Simulated Account Selection Options
-                String[] accounts = {"ambulance_alpha@suraksha.com", "driver_77@gmail.com", "Add another account"};
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("Select Ambulance Account")
-                        .setItems(accounts, (dialog, which) -> {
-                            if (which < 2) {
-                                Toast.makeText(this, "Signing in with " + accounts[which], Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(this, HospitalActivity.class));
-                            } else {
-                                Toast.makeText(this, "Redirecting to Google Sign-In...", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .show();
+                Toast.makeText(this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
             });
         }
     }
 
-    /**
-     * Frontend-only validation for now — no backend exists yet.
-     * Once a backend is ready, replace this with an actual API call
-     * that verifies the hospital name + security number combination.
-     */
     private void handleLogin() {
         String hospitalName = inputHospitalName.getText().toString().trim();
         String securityNumber = inputSecurityNumber.getText().toString().trim();
@@ -70,21 +53,28 @@ public class AmbulanceLoginActivity extends AppCompatActivity {
                 Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
                 loginCard.startAnimation(shake);
             }
-            
-            if (TextUtils.isEmpty(hospitalName)) {
-                inputHospitalName.setError("Hospital name is required");
-            }
-            if (TextUtils.isEmpty(securityNumber)) {
-                inputSecurityNumber.setError("Security number is required");
-            }
             return;
         }
 
-        // TODO: Replace with real authentication once backend exists.
-        Toast.makeText(this, "Login successful! (frontend only)", Toast.LENGTH_LONG).show();
-
-        // Navigate to the Hospital dashboard your teammate built
-        startActivity(new Intent(this, HospitalActivity.class));
-        finish();
+        // Real Firestore Check
+        db.collection("ambulances")
+                .whereEqualTo("hospitalName", hospitalName)
+                .whereEqualTo("securityNumber", securityNumber)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()) {
+                        Toast.makeText(this, "Driver Login Successful!", Toast.LENGTH_SHORT).show();
+                        // For now, redirecting to HospitalActivity as placeholder
+                        // Ideally, this should go to a DriverDashboardActivity
+                        startActivity(new Intent(this, HospitalActivity.class));
+                        finish();
+                    } else {
+                        if (loginCard != null) {
+                            Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
+                            loginCard.startAnimation(shake);
+                        }
+                        Toast.makeText(this, "Invalid credentials for this hospital", Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

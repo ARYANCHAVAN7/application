@@ -7,16 +7,28 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.app.AlertDialog;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+
 public class MainActivity extends AppCompatActivity {
+
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         CardView loginCard = findViewById(R.id.loginCard);
         final EditText etEmail = findViewById(R.id.etEmail);
@@ -27,45 +39,48 @@ public class MainActivity extends AppCompatActivity {
 
         if (btnLogin != null) {
             btnLogin.setOnClickListener(v -> {
-                String email = etEmail != null ? etEmail.getText().toString() : "";
+                String email = etEmail != null ? etEmail.getText().toString().trim() : "";
                 String password = etPassword != null ? etPassword.getText().toString() : "";
 
-                // For demonstration, we'll allow login if fields are not empty
                 if (!email.isEmpty() && !password.isEmpty()) {
-                    Intent intent = new Intent(MainActivity.this, HospitalActivity.class);
-                    startActivity(intent);
+                    mAuth.signInWithEmailAndPassword(email, password)
+                            .addOnCompleteListener(this, task -> {
+                                if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
+                                    checkHospitalRole(mAuth.getCurrentUser().getUid());
+                                } else {
+                                    if (loginCard != null) {
+                                        Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
+                                        loginCard.startAnimation(shake);
+                                    }
+                                    
+                                    String errorMsg = "Login failed";
+                                    if (task.getException() instanceof FirebaseAuthInvalidUserException) {
+                                        errorMsg = "Hospital account not found. Please register.";
+                                    } else if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
+                                        errorMsg = "Incorrect password. Please try again.";
+                                    } else if (task.getException() != null) {
+                                        errorMsg = task.getException().getMessage();
+                                    }
+                                    Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                                }
+                            });
                 } else {
                     if (loginCard != null) {
                         Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
                         loginCard.startAnimation(shake);
                     }
-                    Toast.makeText(MainActivity.this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Please enter credentials", Toast.LENGTH_SHORT).show();
                 }
             });
         }
 
         if (btnGoogleLogin != null) {
             btnGoogleLogin.setOnClickListener(v -> {
-                // Shake effect for feedback
                 if (loginCard != null) {
                     Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
                     loginCard.startAnimation(shake);
                 }
-
-                // Simulated Account Selection Options
-                String[] accounts = {"hospital_admin@suraksha.com", "sevenstar_staff@gmail.com", "Add another account"};
-                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Select Hospital Account");
-                builder.setItems(accounts, (dialog, which) -> {
-                    if (which < 2) {
-                        Toast.makeText(MainActivity.this, "Signing in with " + accounts[which], Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(MainActivity.this, HospitalActivity.class);
-                        startActivity(intent);
-                    } else {
-                        Toast.makeText(MainActivity.this, "Redirecting to Google Sign-In...", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                builder.show();
+                Toast.makeText(MainActivity.this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
             });
         }
 
@@ -75,5 +90,48 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         }
+    }
+
+    private void checkHospitalRole(String userId) {
+        db.collection("users").document(userId).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        DocumentSnapshot document = task.getResult();
+                        
+                        if (!document.exists()) {
+                            mAuth.signOut();
+                            Toast.makeText(MainActivity.this, "Hospital profile not found. Try registering again.", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+
+                        String role = document.getString("role");
+                        if (role != null) role = role.trim();
+                        
+                        boolean isVerified = false;
+                        if (document.contains("isVerified")) {
+                            Object val = document.get("isVerified");
+                            if (val instanceof Boolean) isVerified = (Boolean) val;
+                            else if (val instanceof String) isVerified = "true".equalsIgnoreCase((String) val);
+                        }
+                        
+                        if ("hospital".equals(role)) {
+                            if (isVerified) {
+                                Toast.makeText(MainActivity.this, "Hospital Login Successful!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(MainActivity.this, HospitalActivity.class);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                mAuth.signOut();
+                                Toast.makeText(MainActivity.this, "Account pending verification. Please contact admin to verify License: " + document.getString("licenseNumber"), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            mAuth.signOut();
+                            Toast.makeText(MainActivity.this, "Access Denied: Registered as " + role + ". Use the User portal.", Toast.LENGTH_LONG).show();
+                        }
+                    } else {
+                        mAuth.signOut();
+                        Toast.makeText(MainActivity.this, "Failed to verify account role", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }
