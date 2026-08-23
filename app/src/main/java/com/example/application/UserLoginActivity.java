@@ -76,17 +76,31 @@ public class UserLoginActivity extends AppCompatActivity {
         });
 
         if (btnGoogleLogin != null) {
-            btnGoogleLogin.setOnClickListener(v -> {
-                Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
-                loginCard.startAnimation(shake);
-                Toast.makeText(this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
-            });
+            btnGoogleLogin.setOnClickListener(v -> showSimulatedGoogleSignIn());
         }
 
         tvRegister.setOnClickListener(v -> {
             Intent intent = new Intent(this, RegistrationActivity.class);
             startActivity(intent);
         });
+    }
+
+    private void showSimulatedGoogleSignIn() {
+        String[] accounts = {"demo_user@gmail.com", "test_account@gmail.com", "add_new_account..."};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Choose an account")
+                .setItems(accounts, (dialog, which) -> {
+                    if (which < 2) {
+                        Toast.makeText(this, "Signing in with " + accounts[which], Toast.LENGTH_SHORT).show();
+                        // Simulate success
+                        Intent intent = new Intent(UserLoginActivity.this, DashboardActivity.class);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(this, "Google Sign-In requires configuration", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .show();
     }
 
     private void checkUserRole(String userId) {

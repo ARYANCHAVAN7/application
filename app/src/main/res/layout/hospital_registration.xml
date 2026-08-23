@@ -209,19 +209,29 @@
                 android:textColor="#8CA6C2"
                 android:textSize="13sp" />
 
-            <EditText
-                android:id="@+id/etPassword"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="Create a password"
-                android:textColorHint="#B8CCE0"
-                android:textColor="#0D3B66"
-                android:inputType="textPassword"
-                android:background="@drawable/bg_input_light"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="#1E6FD9"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:hint="Create a password"
+                    android:textColorHint="#B8CCE0"
+                    android:textColor="#0D3B66"
+                    android:inputType="textPassword"
+                    android:background="@drawable/bg_input_light"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -230,19 +240,29 @@
                 android:textColor="#8CA6C2"
                 android:textSize="13sp" />
 
-            <EditText
-                android:id="@+id/etConfirmPassword"
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="Re-enter password"
-                android:textColorHint="#B8CCE0"
-                android:textColor="#0D3B66"
-                android:inputType="textPassword"
-                android:background="@drawable/bg_input_light"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="#1E6FD9"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/etConfirmPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:hint="Re-enter password"
+                    android:textColorHint="#B8CCE0"
+                    android:textColor="#0D3B66"
+                    android:inputType="textPassword"
+                    android:background="@drawable/bg_input_light"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="24dp" />
 
             <Button
                 android:id="@+id/btnRegister"

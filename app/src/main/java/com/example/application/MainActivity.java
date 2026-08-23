@@ -75,13 +75,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (btnGoogleLogin != null) {
-            btnGoogleLogin.setOnClickListener(v -> {
-                if (loginCard != null) {
-                    Animation shake = AnimationUtils.loadAnimation(this, R.anim.shake);
-                    loginCard.startAnimation(shake);
-                }
-                Toast.makeText(MainActivity.this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
-            });
+            btnGoogleLogin.setOnClickListener(v -> showSimulatedGoogleSignIn());
         }
 
         if (btnSignUp != null) {
@@ -90,6 +84,22 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             });
         }
+    }
+
+    private void showSimulatedGoogleSignIn() {
+        String[] accounts = {"city_hospital@gmail.com", "metro_clinic@gmail.com"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Select Hospital Account")
+                .setItems(accounts, (dialog, which) -> {
+                    Toast.makeText(this, "Simulating Google Sign-in for " + accounts[which], Toast.LENGTH_SHORT).show();
+                    
+                    // In real app, we would verify this email in Firestore.
+                    // For demo, we grant immediate access to the Hospital Dashboard.
+                    Intent intent = new Intent(MainActivity.this, HospitalActivity.class);
+                    startActivity(intent);
+                    finish();
+                })
+                .show();
     }
 
     private void checkHospitalRole(String userId) {

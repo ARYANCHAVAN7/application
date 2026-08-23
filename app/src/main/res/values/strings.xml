@@ -50,8 +50,8 @@
     <string name="label_driver_phone">Driver Phone</string>
     <string name="label_driver_email">Driver Email</string>
     <string name="hint_driver_email">driver@example.com</string>
-    <string name="label_driver_password">Driver Password</string>
-    <string name="hint_driver_password">Leave blank to keep existing password</string>
+    <string name="label_driver_password">Ambulance Security Number</string>
+    <string name="hint_driver_password">Enter a unique security code</string>
     <string name="label_vehicle_number">Vehicle Number</string>
     <string name="label_vehicle_type">Vehicle Type</string>
     <string name="btn_add_ambulance">Add Ambulance</string>

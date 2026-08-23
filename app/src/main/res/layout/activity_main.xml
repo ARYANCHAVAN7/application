@@ -78,15 +78,18 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-            <FrameLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:layout_marginTop="8dp">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="#1E6FD9"
+                app:hintEnabled="false">
 
                 <EditText
                     android:id="@+id/etPassword"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="52dp"
                     android:background="@drawable/bg_input_signin"
                     android:hint="@string/hint_password"
                     android:inputType="textPassword"
@@ -95,7 +98,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
                     android:autofillHints="password" />
-            </FrameLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/button2"

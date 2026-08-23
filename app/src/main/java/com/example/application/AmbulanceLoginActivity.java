@@ -38,10 +38,24 @@ public class AmbulanceLoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> handleLogin());
 
         if (btnGoogleLogin != null) {
-            btnGoogleLogin.setOnClickListener(v -> {
-                Toast.makeText(this, "Google Sign-In coming soon!", Toast.LENGTH_SHORT).show();
-            });
+            btnGoogleLogin.setOnClickListener(v -> showSimulatedGoogleSignIn());
         }
+    }
+
+    private void showSimulatedGoogleSignIn() {
+        String[] hospitals = {"Seven Star Hospital", "City Care Clinic"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Select Hospital Fleet")
+                .setItems(hospitals, (dialog, which) -> {
+                    Toast.makeText(this, "Simulating Driver Login for " + hospitals[which], Toast.LENGTH_SHORT).show();
+                    // Simulate redirection to dashboard with dummy credentials
+                    Intent intent = new Intent(this, AmbulanceActivity.class);
+                    intent.putExtra("hospitalName", hospitals[which]);
+                    intent.putExtra("securityNumber", "DEMO-123");
+                    startActivity(intent);
+                    finish();
+                })
+                .show();
     }
 
     private void handleLogin() {
@@ -64,9 +78,11 @@ public class AmbulanceLoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful() && task.getResult() != null && !task.getResult().isEmpty()) {
                         Toast.makeText(this, "Driver Login Successful!", Toast.LENGTH_SHORT).show();
-                        // For now, redirecting to HospitalActivity as placeholder
-                        // Ideally, this should go to a DriverDashboardActivity
-                        startActivity(new Intent(this, HospitalActivity.class));
+                        
+                        Intent intent = new Intent(this, AmbulanceActivity.class);
+                        intent.putExtra("hospitalName", hospitalName);
+                        intent.putExtra("securityNumber", securityNumber);
+                        startActivity(intent);
                         finish();
                     } else {
                         if (loginCard != null) {
