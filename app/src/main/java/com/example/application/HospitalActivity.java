@@ -35,9 +35,11 @@ public class HospitalActivity extends AppCompatActivity {
     private TextView tvHospitalName, tvAvailableBeds, tvAvailableAmbulances, tvActiveEmergencies, tvNoRequests;
     private EditText etTotalBeds, etAvailableBeds, etTotalAmbulances, etAvailableAmbulances;
     private EditText etDriverName, etDriverPhone, etDriverEmail, etDriverPassword, etVehiclePlate, etVehicleType;
-    private RecyclerView rvAmbulanceFleet;
+    private RecyclerView rvAmbulanceFleet, rvEmergencyRequests;
     private AmbulanceAdapter adapter;
+    private EmergencyAdapter emergencyAdapter;
     private List<Map<String, Object>> fleetList = new ArrayList<>();
+    private List<Map<String, Object>> emergencyList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,12 +83,17 @@ public class HospitalActivity extends AppCompatActivity {
         etVehiclePlate = findViewById(R.id.etVehiclePlate);
         etVehicleType = findViewById(R.id.etVehicleType);
         rvAmbulanceFleet = findViewById(R.id.rvAmbulanceFleet);
+        rvEmergencyRequests = findViewById(R.id.rvEmergencyRequests);
     }
 
     private void setupRecyclerView() {
         adapter = new AmbulanceAdapter(fleetList);
         rvAmbulanceFleet.setLayoutManager(new LinearLayoutManager(this));
         rvAmbulanceFleet.setAdapter(adapter);
+
+        emergencyAdapter = new EmergencyAdapter(emergencyList);
+        rvEmergencyRequests.setLayoutManager(new LinearLayoutManager(this));
+        rvEmergencyRequests.setAdapter(emergencyAdapter);
     }
 
     @Override
@@ -128,19 +135,59 @@ public class HospitalActivity extends AppCompatActivity {
     }
 
     private void updateResources() {
-        String uid = mAuth.getCurrentUser().getUid();
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("totalBeds", etTotalBeds.getText().toString());
-        updates.put("availableBeds", etAvailableBeds.getText().toString());
-        updates.put("totalAmbulances", etTotalAmbulances.getText().toString());
-        updates.put("availableAmbulances", etAvailableAmbulances.getText().toString());
+        String totalBedsStr = etTotalBeds.getText().toString().trim();
+        String availableBedsStr = etAvailableBeds.getText().toString().trim();
+        String totalAmbulancesStr = etTotalAmbulances.getText().toString().trim();
+        String availableAmbulancesStr = etAvailableAmbulances.getText().toString().trim();
 
-        db.collection("users").document(uid).update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Resources updated", Toast.LENGTH_SHORT).show();
-                    tvAvailableBeds.setText(etAvailableBeds.getText().toString());
-                    tvAvailableAmbulances.setText(etAvailableAmbulances.getText().toString());
-                });
+        if (totalBedsStr.isEmpty() || availableBedsStr.isEmpty() || totalAmbulancesStr.isEmpty() || availableAmbulancesStr.isEmpty()) {
+            Toast.makeText(this, "Please fill all resource fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            int totalBeds = Integer.parseInt(totalBedsStr);
+            int availableBeds = Integer.parseInt(availableBedsStr);
+            int totalAmbulances = Integer.parseInt(totalAmbulancesStr);
+            int availableAmbulances = Integer.parseInt(availableAmbulancesStr);
+
+            boolean hasError = false;
+
+            if (availableBeds > totalBeds) {
+                etAvailableBeds.setError("Available beds cannot exceed total beds");
+                hasError = true;
+            }
+            if (availableAmbulances > totalAmbulances) {
+                etAvailableAmbulances.setError("Available ambulances cannot exceed total ambulances");
+                hasError = true;
+            }
+            if (totalBeds < 0 || availableBeds < 0 || totalAmbulances < 0 || availableAmbulances < 0) {
+                Toast.makeText(this, "Values cannot be negative", Toast.LENGTH_SHORT).show();
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            String uid = mAuth.getCurrentUser().getUid();
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("totalBeds", totalBedsStr);
+            updates.put("availableBeds", availableBedsStr);
+            updates.put("totalAmbulances", totalAmbulancesStr);
+            updates.put("availableAmbulances", availableAmbulancesStr);
+
+            db.collection("users").document(uid).update(updates)
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "Resources updated successfully", Toast.LENGTH_SHORT).show();
+                        tvAvailableBeds.setText(availableBedsStr);
+                        tvAvailableAmbulances.setText(availableAmbulancesStr);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Please enter valid numeric values", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void addAmbulance() {
@@ -185,7 +232,23 @@ public class HospitalActivity extends AppCompatActivity {
                 .addSnapshotListener((value, error) -> {
                     if (value != null) {
                         tvActiveEmergencies.setText(String.valueOf(value.size()));
-                        tvNoRequests.setText(value.size() > 0 ? "You have " + value.size() + " active emergencies!" : "No new emergency requests");
+                        
+                        emergencyList.clear();
+                        for (QueryDocumentSnapshot doc : value) {
+                            Map<String, Object> data = doc.getData();
+                            data.put("id", doc.getId()); // Store document ID for acceptance
+                            emergencyList.add(data);
+                        }
+                        emergencyAdapter.notifyDataSetChanged();
+
+                        if (emergencyList.isEmpty()) {
+                            tvNoRequests.setVisibility(View.VISIBLE);
+                            rvEmergencyRequests.setVisibility(View.GONE);
+                            tvNoRequests.setText(R.string.msg_no_requests);
+                        } else {
+                            tvNoRequests.setVisibility(View.GONE);
+                            rvEmergencyRequests.setVisibility(View.VISIBLE);
+                        }
                     }
                 });
     }
@@ -208,6 +271,61 @@ public class HospitalActivity extends AppCompatActivity {
     private void redirectToLogin() {
         startActivity(new Intent(this, StartingActivity.class));
         finish();
+    }
+
+    private class EmergencyAdapter extends RecyclerView.Adapter<EmergencyAdapter.ViewHolder> {
+        private List<Map<String, Object>> list;
+
+        EmergencyAdapter(List<Map<String, Object>> list) { this.list = list; }
+
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_emergency_request, parent, false);
+            return new ViewHolder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+            Map<String, Object> data = list.get(position);
+            holder.tvPatientName.setText((String) data.get("userName"));
+            String location = (String) data.get("location");
+            holder.tvLocation.setText(getString(R.string.label_location_prefix) + (location != null ? location : "Unknown"));
+            
+            holder.btnAccept.setOnClickListener(v -> {
+                String requestId = (String) data.get("id");
+                acceptEmergency(requestId);
+            });
+        }
+
+        @Override
+        public int getItemCount() { return list.size(); }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            TextView tvPatientName, tvLocation;
+            Button btnAccept;
+            ViewHolder(View v) {
+                super(v);
+                tvPatientName = v.findViewById(R.id.tvPatientName);
+                tvLocation = v.findViewById(R.id.tvLocation);
+                btnAccept = v.findViewById(R.id.btnAcceptRequest);
+            }
+        }
+    }
+
+    private void acceptEmergency(String requestId) {
+        String hospitalUid = mAuth.getCurrentUser().getUid();
+        
+        db.collection("emergencies").document(requestId)
+                .update("status", "accepted", 
+                        "hospitalId", hospitalUid,
+                        "hospitalName", tvHospitalName.getText().toString())
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Emergency Request Accepted!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to accept: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private class AmbulanceAdapter extends RecyclerView.Adapter<AmbulanceAdapter.ViewHolder> {
