@@ -99,7 +99,8 @@ public class HospitalRegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
                         String userId = mAuth.getCurrentUser().getUid();
-                        saveHospitalToFirestore(userId, name, email, phone, address, license, totalBeds, totalAmbulances, true);
+                        // Approval Request Change: Passing false for setPending to allow direct registration
+                        saveHospitalToFirestore(userId, name, email, phone, address, license, totalBeds, totalAmbulances, false);
                     } else {
                         if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                             Toast.makeText(this, "Hospital email already registered. Checking profile...", Toast.LENGTH_SHORT).show();
@@ -155,15 +156,19 @@ public class HospitalRegisterActivity extends AppCompatActivity {
         hospital.put("availableAmbulances", ambulances); // Initialize available with total
         hospital.put("role", "hospital");
         
+        // Approval Request Change: Setting isVerified to true by default for direct registration
         if (setPending) {
             hospital.put("isVerified", false);
+        } else {
+            hospital.put("isVerified", true);
         }
 
         db.collection("users").document(userId)
                 .set(hospital, com.google.firebase.firestore.SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
                     setLoading(false);
-                    Toast.makeText(HospitalRegisterActivity.this, "Hospital Registration Successful! Pending Admin Verification.", Toast.LENGTH_LONG).show();
+                    // Approval Request Change: Updated Toast message for direct registration
+                    Toast.makeText(HospitalRegisterActivity.this, "Hospital Registration Successful! You can now login.", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(HospitalRegisterActivity.this, StartingActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
