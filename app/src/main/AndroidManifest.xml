@@ -20,6 +20,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Application">
 
+        <meta-data
+            android:name="com.mapbox.token"
+            android:value="${MAPBOX_ACCESS_TOKEN}" />
+
         <activity
             android:name=".LoadingActivity"
             android:exported="true">
@@ -73,9 +77,6 @@
             android:name=".AmbulanceLoginActivity"
             android:exported="false" />
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY_HERE" />
     </application>
 
 </manifest>

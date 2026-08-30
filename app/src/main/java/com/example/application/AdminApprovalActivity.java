@@ -13,9 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +41,7 @@ public class AdminApprovalActivity extends AppCompatActivity {
         tvEmptyState = findViewById(R.id.tvEmptyState);
 
         setupRecyclerView();
-        loadPendingHospitals();
+        loadPendingApprovals();
     }
 
     private void setupRecyclerView() {
@@ -48,18 +50,29 @@ public class AdminApprovalActivity extends AppCompatActivity {
         rvPendingHospitals.setAdapter(adapter);
     }
 
-    private void loadPendingHospitals() {
-        db.collection("users")
+    private void loadPendingApprovals() {
+        com.google.android.gms.tasks.Task<QuerySnapshot> hospitalTask = db.collection("users")
                 .whereEqualTo("role", "hospital")
                 .whereEqualTo("isVerified", false)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .get();
+        com.google.android.gms.tasks.Task<QuerySnapshot> ambulanceTask = db.collection("ambulances")
+                .whereEqualTo("role", "ambulance")
+                .whereEqualTo("isApproved", false)
+                .get();
+
+        Tasks.whenAllSuccess(hospitalTask, ambulanceTask)
+                .addOnSuccessListener(results -> {
                     pendingList.clear();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    for (QueryDocumentSnapshot doc : (QuerySnapshot) results.get(0)) {
+                        pendingList.add(doc);
+                    }
+                    for (QueryDocumentSnapshot doc : (QuerySnapshot) results.get(1)) {
                         pendingList.add(doc);
                     }
                     updateUI();
-                });
+                })
+                .addOnFailureListener(error ->
+                        Toast.makeText(this, "Failed to load pending approvals", Toast.LENGTH_LONG).show());
     }
 
     private void updateUI() {
@@ -74,10 +87,18 @@ public class AdminApprovalActivity extends AppCompatActivity {
     }
 
     private void approveHospital(String docId, int position) {
-        db.collection("users").document(docId)
-                .update("isVerified", true)
+        DocumentSnapshot document = pendingList.get(position);
+        boolean ambulance = "ambulances".equals(document.getReference().getParent().getId());
+        Map<String, Object> updates = new java.util.HashMap<>();
+        updates.put("isVerified", true);
+        if (ambulance) {
+            updates.put("isApproved", true);
+            updates.put("approvalStatus", "approved");
+        }
+
+        document.getReference().update(updates)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Hospital Approved!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, ambulance ? "Ambulance Approved!" : "Hospital Approved!", Toast.LENGTH_SHORT).show();
                     pendingList.remove(position);
                     updateUI();
                 })
@@ -104,9 +125,14 @@ public class AdminApprovalActivity extends AppCompatActivity {
             Map<String, Object> data = doc.getData();
             if (data == null) return;
 
-            holder.tvName.setText((String) data.get("hospitalName"));
-            holder.tvLicense.setText("License: " + data.get("licenseNumber"));
-            holder.tvContact.setText((String) data.get("email") + " | " + data.get("phone"));
+                boolean ambulance = "ambulance".equals(data.get("role"));
+                holder.tvName.setText(ambulance ? (String) data.get("driverName") : (String) data.get("hospitalName"));
+                holder.tvLicense.setText(ambulance
+                    ? "Vehicle: " + data.get("vehicleNumber")
+                    : "License: " + data.get("licenseNumber"));
+                holder.tvContact.setText(ambulance
+                    ? String.valueOf(data.get("driverEmail")) + " | " + data.get("driverPhone")
+                    : String.valueOf(data.get("email")) + " | " + data.get("phone"));
 
             holder.btnApprove.setOnClickListener(v -> approveHospital(doc.getId(), position));
         }

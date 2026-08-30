@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LoadingActivity extends AppCompatActivity {
 
+    private Handler delayHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,12 +31,23 @@ public class LoadingActivity extends AppCompatActivity {
         loadingLogo.startAnimation(pulseAnim);
 
         // Delay for 2.5 seconds then transition to StartingActivity
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        delayHandler = new Handler(Looper.getMainLooper());
+        delayHandler.postDelayed(() -> {
             Intent intent = new Intent(LoadingActivity.this, StartingActivity.class);
             startActivity(intent);
             finish(); // Close LoadingActivity
             // Add a smooth transition out
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }, 2500);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Clean up the handler to prevent memory leaks
+        if (delayHandler != null) {
+            delayHandler.removeCallbacksAndMessages(null);
+            delayHandler = null;
+        }
     }
 }

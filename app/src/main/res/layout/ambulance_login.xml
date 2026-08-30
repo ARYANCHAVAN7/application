@@ -76,20 +76,20 @@
                 android:textSize="13sp"
                 android:layout_marginBottom="20dp" />
 
-            <!-- Hospital Name -->
+            <!-- Driver Email -->
             <TextView
                 style="@style/FieldLabel"
-                android:text="Hospital Name" />
+                android:text="Email" />
             <EditText
-                android:id="@+id/inputHospitalName"
+                android:id="@+id/inputEmail"
                 style="@style/FieldInput"
-                android:hint="Enter registered hospital name"
-                android:inputType="text" />
+                android:hint="Enter driver email"
+                android:inputType="textEmailAddress" />
 
-            <!-- Ambulance Security Number -->
+            <!-- Firebase Password -->
             <TextView
                 style="@style/FieldLabel"
-                android:text="@string/label_driver_password" />
+                android:text="Password" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -99,9 +99,9 @@
                 app:hintEnabled="false">
 
                 <EditText
-                    android:id="@+id/inputSecurityNumber"
+                    android:id="@+id/inputPassword"
                     style="@style/FieldInput"
-                    android:hint="@string/hint_driver_password"
+                    android:hint="Enter password"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 

@@ -663,7 +663,7 @@
                 android:layout_height="50dp"
                 android:maxWidth="488dp"
                 android:layout_gravity="center_horizontal"
-                android:hint="@string/hint_driver_password"
+                android:hint="@string/hint_driver_auth_password"
                 android:textColorHint="#8CA6C2"
                 android:textColor="#0D3B66"
                 android:inputType="textPassword"
@@ -718,6 +718,27 @@
                 android:textColor="#0D3B66"
                 android:inputType="text"
                 android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="18dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_security_number"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etSecurityNumber"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:hint="@string/hint_security_number"
+                android:textColorHint="#8CA6C2"
+                android:textColor="#0D3B66"
+                android:inputType="text"
                 android:background="@drawable/bg_input_light"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"

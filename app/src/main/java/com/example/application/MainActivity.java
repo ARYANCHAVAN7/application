@@ -99,9 +99,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void performGoogleSignIn() {
-        // You MUST replace this with your real Web Client ID from Firebase Console
-        // It looks like: 903850805671-xxxxxxxx.apps.googleusercontent.com
-        String webClientId = "903850805671-u6m8lq1q1m1m1m1m1m1m1m1m1m1m1m1.apps.googleusercontent.com"; 
+        String webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID;
+        if (webClientId == null || webClientId.trim().isEmpty() || webClientId.contains("YOUR_")) {
+            Toast.makeText(this,
+                    "Google Web Client ID is missing. Add GOOGLE_WEB_CLIENT_ID from Firebase Console > Authentication > Sign-in method > Google and set it in local.properties.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
 
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)

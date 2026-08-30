@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pending Hospital Verifications"
+        android:text="Pending Hospital and Ambulance Verifications"
         android:textColor="#4A90E2"
         android:textSize="14sp"
         android:layout_marginBottom="20dp" />
@@ -34,7 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="All hospitals are verified! 🎉"
+        android:text="All hospitals and ambulances are verified!"
         android:textColor="#8CA6C2"
         android:visibility="gone" />
 

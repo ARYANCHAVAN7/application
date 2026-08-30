@@ -15,7 +15,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -34,7 +36,7 @@ public class HospitalActivity extends AppCompatActivity {
 
     private TextView tvHospitalName, tvAvailableBeds, tvAvailableAmbulances, tvActiveEmergencies, tvNoRequests;
     private EditText etTotalBeds, etAvailableBeds, etTotalAmbulances, etAvailableAmbulances;
-    private EditText etDriverName, etDriverPhone, etDriverEmail, etDriverPassword, etVehiclePlate, etVehicleType;
+    private EditText etDriverName, etDriverPhone, etDriverEmail, etDriverPassword, etSecurityNumber, etVehiclePlate, etVehicleType;
     private RecyclerView rvAmbulanceFleet, rvEmergencyRequests;
     private AmbulanceAdapter adapter;
     private EmergencyAdapter emergencyAdapter;
@@ -80,6 +82,7 @@ public class HospitalActivity extends AppCompatActivity {
         etDriverPhone = findViewById(R.id.etDriverPhone);
         etDriverEmail = findViewById(R.id.etDriverEmail);
         etDriverPassword = findViewById(R.id.etDriverPassword);
+        etSecurityNumber = findViewById(R.id.etSecurityNumber);
         etVehiclePlate = findViewById(R.id.etVehiclePlate);
         etVehicleType = findViewById(R.id.etVehicleType);
         rvAmbulanceFleet = findViewById(R.id.rvAmbulanceFleet);
@@ -191,29 +194,139 @@ public class HospitalActivity extends AppCompatActivity {
     }
 
     private void addAmbulance() {
-        String uid = mAuth.getCurrentUser().getUid();
-        String name = etDriverName.getText().toString();
-        String phone = etDriverPhone.getText().toString();
-        String security = etDriverPassword.getText().toString(); // Use password field for security number
-        String plate = etVehiclePlate.getText().toString();
-
-        if (name.isEmpty() || security.isEmpty()) {
-            Toast.makeText(this, "Driver name and security number required", Toast.LENGTH_SHORT).show();
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Unauthorized access.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Map<String, Object> ambulance = new HashMap<>();
-        ambulance.put("driverName", name);
-        ambulance.put("driverPhone", phone);
-        ambulance.put("securityNumber", security);
-        ambulance.put("vehicleNumber", plate);
-        ambulance.put("hospitalId", uid);
-        ambulance.put("hospitalName", tvHospitalName.getText().toString());
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(document -> {
+                    if (!document.exists() || !"hospital".equals(document.getString("role"))) {
+                        Toast.makeText(this, "Unauthorized access.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
 
-        db.collection("ambulances").add(ambulance)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(this, "Ambulance added to fleet", Toast.LENGTH_SHORT).show();
-                    clearAmbulanceFields();
+                    Boolean isVerified = document.getBoolean("isVerified");
+                    if (!Boolean.TRUE.equals(isVerified)) {
+                        Toast.makeText(this, "Hospital account is not approved.", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    createAmbulanceAccount(uid);
+                })
+                .addOnFailureListener(error ->
+                        Toast.makeText(this, "Unable to verify hospital authorization.", Toast.LENGTH_LONG).show());
+    }
+
+    private void createAmbulanceAccount(String uid) {
+        String name = etDriverName.getText().toString().trim();
+        String phone = etDriverPhone.getText().toString().trim();
+        String email = etDriverEmail.getText().toString().trim();
+        String password = etDriverPassword.getText().toString();
+        String security = etSecurityNumber.getText().toString().trim();
+        String plate = etVehiclePlate.getText().toString().trim();
+
+        if (name.isEmpty()) {
+            etDriverName.setError("Driver name is required");
+            return;
+        }
+        if (email.isEmpty()) {
+            etDriverEmail.setError("Driver email is required");
+            return;
+        }
+        if (password.length() < 6) {
+            etDriverPassword.setError("Password must be at least 6 characters");
+            return;
+        }
+        if (security.isEmpty()) {
+            etSecurityNumber.setError("Ambulance security number is required");
+            return;
+        }
+
+        FirebaseApp initializedAuthApp;
+        try {
+            initializedAuthApp = FirebaseApp.getInstance("ambulanceAuth");
+        } catch (IllegalStateException ignored) {
+            initializedAuthApp = FirebaseApp.initializeApp(this, FirebaseApp.getInstance().getOptions(), "ambulanceAuth");
+        }
+        final FirebaseApp authApp = initializedAuthApp;
+
+        if (authApp == null) {
+            Toast.makeText(this, "Unable to initialize ambulance authentication", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        FirebaseAuth.getInstance(authApp).createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null || task.getResult().getUser() == null) {
+                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                            repairAmbulanceAccount(authApp, uid, email, password, name, phone, security, plate);
+                        } else {
+                            Toast.makeText(this, "Unable to create ambulance authentication account", Toast.LENGTH_LONG).show();
+                            authApp.delete();
+                        }
+                        return;
+                    }
+
+                    String ambulanceUid = task.getResult().getUser().getUid();
+                    saveAmbulanceProfile(authApp, ambulanceUid, uid, name, phone, email, security, plate, true);
+                });
+    }
+
+    private void repairAmbulanceAccount(FirebaseApp authApp, String hospitalUid, String email, String password,
+                                        String name, String phone, String security, String plate) {
+        FirebaseAuth.getInstance(authApp).signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null || task.getResult().getUser() == null) {
+                        Toast.makeText(this, "That driver email is already registered, but the password does not match", Toast.LENGTH_LONG).show();
+                        authApp.delete();
+                        return;
+                    }
+                    saveAmbulanceProfile(authApp, task.getResult().getUser().getUid(), hospitalUid,
+                            name, phone, email, security, plate, false);
+                });
+    }
+
+    private void saveAmbulanceProfile(FirebaseApp authApp, String ambulanceUid, String hospitalUid,
+                                      String name, String phone, String email, String security, String plate,
+                                      boolean deleteAuthOnFailure) {
+        db.collection("ambulances").document(ambulanceUid).get()
+                .addOnSuccessListener(existingProfile -> {
+                    if (existingProfile.exists()) {
+                        Toast.makeText(this, "That ambulance profile already exists", Toast.LENGTH_LONG).show();
+                        authApp.delete();
+                        return;
+                    }
+
+                    Map<String, Object> ambulance = new HashMap<>();
+                    ambulance.put("driverName", name);
+                    ambulance.put("driverPhone", phone);
+                    ambulance.put("driverEmail", email);
+                    ambulance.put("securityNumber", security);
+                    ambulance.put("vehicleNumber", plate);
+                    ambulance.put("hospitalId", hospitalUid);
+                    ambulance.put("hospitalName", tvHospitalName.getText().toString().trim());
+                    ambulance.put("role", "ambulance");
+                    ambulance.put("approvalStatus", "pending");
+                    ambulance.put("isApproved", false);
+                    ambulance.put("isVerified", false);
+
+                    db.collection("ambulances").document(ambulanceUid).set(ambulance)
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(this, "Ambulance added and submitted for approval", Toast.LENGTH_LONG).show();
+                                clearAmbulanceFields();
+                                authApp.delete();
+                            })
+                            .addOnFailureListener(error -> {
+                                Toast.makeText(this, "Ambulance profile could not be saved", Toast.LENGTH_LONG).show();
+                                if (deleteAuthOnFailure && FirebaseAuth.getInstance(authApp).getCurrentUser() != null) {
+                                    FirebaseAuth.getInstance(authApp).getCurrentUser().delete()
+                                            .addOnCompleteListener(deleteTask -> authApp.delete());
+                                } else {
+                                    authApp.delete();
+                                }
+                            });
                 });
     }
 
@@ -222,22 +335,33 @@ public class HospitalActivity extends AppCompatActivity {
         etDriverPhone.setText("");
         etDriverEmail.setText("");
         etDriverPassword.setText("");
+        etSecurityNumber.setText("");
         etVehiclePlate.setText("");
         etVehicleType.setText("");
     }
 
     private void listenForEmergencies() {
+        String hospitalUid = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+        if (hospitalUid == null) return;
+
         emergencyListener = db.collection("emergencies")
-                .whereEqualTo("status", "active")
+                .whereEqualTo("hospitalId", hospitalUid)
+                .whereIn("status", java.util.Arrays.asList("pending", "active"))
                 .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Toast.makeText(this, "Failed to load emergency requests: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     if (value != null) {
                         tvActiveEmergencies.setText(String.valueOf(value.size()));
-                        
+
                         emergencyList.clear();
                         for (QueryDocumentSnapshot doc : value) {
                             Map<String, Object> data = doc.getData();
-                            data.put("id", doc.getId()); // Store document ID for acceptance
-                            emergencyList.add(data);
+                            if (data != null) {
+                                data.put("id", doc.getId());
+                                emergencyList.add(data);
+                            }
                         }
                         emergencyAdapter.notifyDataSetChanged();
 
@@ -314,18 +438,40 @@ public class HospitalActivity extends AppCompatActivity {
     }
 
     private void acceptEmergency(String requestId) {
+        if (requestId == null || requestId.trim().isEmpty()) {
+            Toast.makeText(this, "Invalid emergency request.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String hospitalUid = mAuth.getCurrentUser().getUid();
-        
-        db.collection("emergencies").document(requestId)
-                .update("status", "accepted", 
-                        "hospitalId", hospitalUid,
-                        "hospitalName", tvHospitalName.getText().toString())
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Emergency Request Accepted!", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to accept: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        String hospitalName = tvHospitalName.getText() != null ? tvHospitalName.getText().toString() : "";
+        com.google.firebase.firestore.DocumentReference emergencyRef = db.collection("emergencies").document(requestId);
+
+        db.runTransaction(transaction -> {
+            com.google.firebase.firestore.DocumentSnapshot snapshot = transaction.get(emergencyRef);
+            if (!snapshot.exists()) {
+                throw new RuntimeException("Emergency request no longer exists.");
+            }
+
+            Object statusObj = snapshot.get("status");
+            String status = statusObj instanceof String ? (String) statusObj : "";
+            if (!"pending".equals(status) && !"active".equals(status)) {
+                throw new RuntimeException("This emergency was already accepted by another responder.");
+            }
+
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("status", "accepted");
+            updates.put("acceptedBy", hospitalUid);
+            updates.put("acceptedAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
+            updates.put("hospitalId", hospitalUid);
+            updates.put("hospitalName", hospitalName);
+            transaction.update(emergencyRef, updates);
+            return true;
+        }).addOnSuccessListener(aVoid -> {
+            Toast.makeText(this, "Emergency request accepted successfully.", Toast.LENGTH_SHORT).show();
+        }).addOnFailureListener(e -> {
+            Toast.makeText(this, e.getMessage() != null ? e.getMessage() : "Failed to accept emergency.", Toast.LENGTH_LONG).show();
+        });
     }
 
     private class AmbulanceAdapter extends RecyclerView.Adapter<AmbulanceAdapter.ViewHolder> {

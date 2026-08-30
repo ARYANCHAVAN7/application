@@ -507,6 +507,26 @@
             </LinearLayout>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/ambulanceEta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="8dp"
+            android:text="No active ambulance tracking."
+            android:textColor="@color/text_primary"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <com.mapbox.maps.MapView
+            android:id="@+id/userMap"
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="20dp" />
+
         <!-- ===== EMERGENCY CONTACTS LIST ===== -->
         <LinearLayout
             android:layout_width="match_parent"
