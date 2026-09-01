@@ -68,7 +68,12 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Mapbox Maps SDK for map functionality
     implementation(libs.mapbox.maps)
+<<<<<<< HEAD
     implementation("com.mapbox.extension:maps-style:11.29.1")
+=======
+    // OkHttp for REST API calls to Mapbox Directions API
+    implementation(libs.okhttp)
+>>>>>>> 25f557c (Update ambulance project map  functionality)
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)

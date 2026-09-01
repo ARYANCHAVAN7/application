@@ -52,6 +52,9 @@ public class AmbulanceActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
 
+    // PHASE 8: GPS Smoothing filter to reduce jitter
+    private com.example.application.utils.GPSSmoothing.MovingAverageFilter gpsFilter;
+
     private MaterialSwitch statusSwitch;
     private LinearLayout medicalInfoSection;
     private TextView btnToggleVitals;
@@ -75,11 +78,20 @@ public class AmbulanceActivity extends AppCompatActivity {
         hospitalId = getIntent().getStringExtra("hospitalId");
         ambulanceUid = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
 
+        // PHASE 8: Initialize GPS smoothing filter with buffer size 3
+        gpsFilter = new com.example.application.utils.GPSSmoothing.MovingAverageFilter(3);
+
         bindViews();
         if (mapView != null) {
             mMap = mapView.getMapboxMap();
         }
-        setupMap();
+        
+        try {
+            setupMap();
+        } catch (Exception e) {
+            Log.e("AmbulanceActivity", "Error during map setup in onCreate", e);
+            Toast.makeText(this, "Error initializing ambulance dashboard: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
 
         statusSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             updateStatusInFirestore(isChecked);
@@ -118,14 +130,24 @@ public class AmbulanceActivity extends AppCompatActivity {
     private void setupMap() {
         if (mapView == null) return;
         
-        mapView.getMapboxMap().loadStyle(Style.MAPBOX_STREETS, style -> {
-            mapView.getMapboxMap().setCamera(new CameraOptions.Builder()
-                    .zoom(12.0)
-                    .build());
-            loadAmbulanceData();
-            listenForEmergencies();
-            startLiveAmbulanceTracking();
-        });
+        try {
+            mapView.getMapboxMap().loadStyle(Style.MAPBOX_STREETS, style -> {
+                try {
+                    mapView.getMapboxMap().setCamera(new CameraOptions.Builder()
+                            .zoom(12.0)
+                            .build());
+                    loadAmbulanceData();
+                    listenForEmergencies();
+                    startLiveAmbulanceTracking();
+                } catch (Exception e) {
+                    Log.e("AmbulanceActivity", "Error in map initialization", e);
+                    Toast.makeText(AmbulanceActivity.this, "Error loading emergency data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Log.e("AmbulanceActivity", "Error loading map style", e);
+            Toast.makeText(this, "Error loading map: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void loadAmbulanceData() {
@@ -156,22 +178,29 @@ public class AmbulanceActivity extends AppCompatActivity {
             return;
         }
 
-        emergencyListener = db.collection("emergencies")
-                .whereEqualTo("hospitalName", hospitalName)
-                .whereIn("status", java.util.Arrays.asList("pending", "active", "accepted"))
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .limit(1)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Unable to load emergency updates: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    if (value != null && !value.isEmpty()) {
-                        updateEmergencyUI(value.getDocuments().get(0));
-                    } else {
-                        clearEmergencyUI();
-                    }
-                });
+        try {
+            emergencyListener = db.collection("emergencies")
+                    .whereEqualTo("hospitalName", hospitalName)
+                    .whereIn("status", java.util.Arrays.asList("pending", "active", "accepted"))
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(1)
+                    .addSnapshotListener((value, error) -> {
+                        if (error != null) {
+                            Log.e("AmbulanceActivity", "Firestore listener error", error);
+                            Toast.makeText(AmbulanceActivity.this, "Unable to load emergency updates: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        if (value != null && !value.isEmpty()) {
+                            updateEmergencyUI(value.getDocuments().get(0));
+                        } else {
+                            clearEmergencyUI();
+                        }
+                    });
+        } catch (Exception e) {
+            Log.e("AmbulanceActivity", "Error setting up emergency listener", e);
+            // If there's an error setting up the listener (e.g., missing index), show a message
+            Toast.makeText(this, "Could not set up emergency listener: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateEmergencyUI(DocumentSnapshot doc) {
@@ -380,20 +409,37 @@ public class AmbulanceActivity extends AppCompatActivity {
             return;
         }
 
-        LocationRequest request = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 15000L)
-                .setMinUpdateDistanceMeters(10f)
-                .build();
+        try {
+            LocationRequest request = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 15000L)
+                    .setMinUpdateDistanceMeters(10f)
+                    .build();
 
-        locationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(@NonNull LocationResult locationResult) {
-                if (locationResult.getLastLocation() != null) {
-                    saveCurrentAmbulanceLocation(locationResult.getLastLocation());
+            locationCallback = new LocationCallback() {
+                @Override
+                public void onLocationResult(@NonNull LocationResult locationResult) {
+                    if (locationResult.getLastLocation() != null) {
+                        // PHASE 8: Apply GPS smoothing filter to reduce jitter
+                        Location rawLocation = locationResult.getLastLocation();
+                        Location smoothedLocation = gpsFilter.addLocation(rawLocation);
+
+                        // Only save if we have a smoothed location (sufficient buffer data)
+                        if (smoothedLocation != null) {
+                            Log.d("AmbulanceActivity", String.format("GPS - Raw: (%.4f, %.4f), Smoothed: (%.4f, %.4f)",
+                                    rawLocation.getLatitude(), rawLocation.getLongitude(),
+                                    smoothedLocation.getLatitude(), smoothedLocation.getLongitude()));
+                            saveCurrentAmbulanceLocation(smoothedLocation);
+                        } else {
+                            Log.d("AmbulanceActivity", "GPS filter buffering... (" + gpsFilter.getBufferSize() + "/3)");
+                        }
+                    }
                 }
-            }
-        };
+            };
 
-        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper());
+            fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper());
+        } catch (Exception e) {
+            Log.e("AmbulanceActivity", "Error starting location tracking", e);
+            Toast.makeText(this, "Could not start location tracking: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

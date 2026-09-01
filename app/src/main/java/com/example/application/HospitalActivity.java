@@ -415,7 +415,7 @@ public class HospitalActivity extends AppCompatActivity {
             holder.tvPatientName.setText((String) data.get("userName"));
             String location = (String) data.get("location");
             holder.tvLocation.setText(getString(R.string.label_location_prefix) + (location != null ? location : "Unknown"));
-            
+
             holder.btnAccept.setOnClickListener(v -> {
                 String requestId = (String) data.get("id");
                 acceptEmergency(requestId);

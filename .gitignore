@@ -19,3 +19,8 @@ local.properties
 
 # IDE / Tooling artifacts
 .artifacts/
+
+# Local Mapbox token
+app/src/main/res/values/mapbox_access_token.xml
+
+.idea/

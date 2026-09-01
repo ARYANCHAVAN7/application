@@ -6,4 +6,3 @@
     android:repeatCount="4"
     android:repeatMode="reverse"
     android:interpolator="@android:anim/cycle_interpolator" />
-<!-- interpolator with cycle 2 or cycle 3 in code -->
