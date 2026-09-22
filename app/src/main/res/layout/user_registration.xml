@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background ="@drawable/apurva"
+    android:scrollbars="none">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="32dp">
+
+        <!-- ===== Logo Header ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="28dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/registration_logo_emoji"
+                android:textSize="40sp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name_uppercase"
+                android:textColor="@color/blue_accent"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/app_tagline"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- ===== Form Card ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_rounded"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/create_account"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/registration_subtitle"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Full Name -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/label_full_name" />
+            <EditText
+                android:id="@+id/inputFullName"
+                style="@style/FieldInput"
+                android:hint="@string/hint_full_name"
+                android:inputType="textPersonName"
+                android:autofillHints="name" />
+
+            <!-- Email -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/email" />
+            <EditText
+                android:id="@+id/inputEmail"
+                style="@style/FieldInput"
+                android:hint="@string/hint_email"
+                android:inputType="textEmailAddress"
+                android:autofillHints="emailAddress" />
+
+            <!-- Phone -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/label_phone" />
+            <EditText
+                android:id="@+id/inputPhone"
+                style="@style/FieldInput"
+                android:hint="@string/hint_phone"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:autofillHints="phone" />
+
+            <!-- Password -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/password" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/blue_accent"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/inputPassword"
+                    style="@style/FieldInput"
+                    android:hint="@string/hint_password_create"
+                    android:inputType="textPassword"
+                    android:autofillHints="password" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Confirm Password -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/label_confirm_password" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="@color/blue_accent"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/inputConfirmPassword"
+                    style="@style/FieldInput"
+                    android:hint="@string/hint_confirm_password"
+                    android:inputType="textPassword"
+                    android:autofillHints="password" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Blood Group -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/blood_group" />
+            <EditText
+                android:id="@+id/inputBloodGroup"
+                style="@style/FieldInput"
+                android:hint="@string/hint_blood_group"
+                android:inputType="text"
+                android:autofillHints="none" />
+
+            <!-- Emergency Contact Name -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/label_emergency_name" />
+            <EditText
+                android:id="@+id/inputEmergencyName"
+                style="@style/FieldInput"
+                android:hint="@string/hint_emergency_name"
+                android:inputType="textPersonName"
+                android:autofillHints="none" />
+
+            <!-- Emergency Contact Phone -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="@string/label_emergency_phone" />
+            <EditText
+                android:id="@+id/inputEmergencyPhone"
+                style="@style/FieldInput"
+                android:hint="@string/hint_phone"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:layout_marginBottom="24dp"
+                android:autofillHints="phone" />
+
+            <!-- Register Button -->
+            <TextView
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_button_primary"
+                android:gravity="center"
+                android:text="@string/register"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Already have an account -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/already_have_account"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/goToLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login_link"
+                    android:textColor="@color/blue_accent"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

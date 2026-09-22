@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/hospitaldash"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/dashboardContainer"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="18dp">
+
+        <!-- ===== HEADER ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/emoji_hospital"
+                android:textSize="26sp"
+                android:layout_marginEnd="10dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvHospitalName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/hospital_name"
+                    android:textColor="#0D3B66"
+                    android:textSize="19sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/bg_status_online"
+                        android:backgroundTint="#22C55E"
+                        android:layout_marginEnd="6dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/status_online"
+                        android:textColor="#22C55E"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnLogout"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="@string/logout"
+                android:textColor="#0D3B66"
+                android:textSize="13sp"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_card_white"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+        </LinearLayout>
+
+        <!-- ===== TITLE ===== -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_title"
+            android:textColor="#0D3B66"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="6dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dashboard_subtitle"
+            android:textColor="#4A90E2"
+            android:textSize="13sp"
+            android:layout_marginBottom="18dp" />
+
+        <!-- ===== STATS GRID ROW 1 ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:elevation="3dp"
+                android:padding="16dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_available_beds_icon"
+                    android:textColor="#8CA6C2"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvAvailableBeds"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_beds_count"
+                    android:textColor="#1E6FD9"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_total_beds_summary"
+                    android:textColor="#8CA6C2"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:elevation="3dp"
+                android:padding="16dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_available_ambulances_icon"
+                    android:textColor="#8CA6C2"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvAvailableAmbulances"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_ambulances_count"
+                    android:textColor="#4A90E2"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== STATS GRID ROW 2 ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false"
+            android:layout_marginBottom="20dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:elevation="3dp"
+                android:padding="16dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_active_emergencies_icon"
+                    android:textColor="#8CA6C2"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvActiveEmergencies"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_emergencies_count"
+                    android:textColor="#E53935"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@drawable/bg_card_white"
+                android:elevation="3dp"
+                android:padding="16dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_response_rate"
+                    android:textColor="#8CA6C2"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvResponseRate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_response_rate"
+                    android:textColor="#F5B914"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/response_rate_trend"
+                    android:textColor="#22C55E"
+                    android:textSize="11sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ===== RESOURCE MANAGEMENT ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="3dp"
+            android:padding="18dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_resource_management"
+                android:textColor="#0D3B66"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/desc_resource_management"
+                android:textColor="#8CA6C2"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/status_online"
+                android:textColor="#22C55E"
+                android:textSize="12sp"
+                android:background="@drawable/bg_status_online"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_total_beds"
+                android:labelFor="@+id/etTotalBeds"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etTotalBeds"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/default_beds_count"
+                android:textColor="#0D3B66"
+                android:inputType="number"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_available_beds"
+                android:labelFor="@+id/etAvailableBeds"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etAvailableBeds"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/default_beds_count"
+                android:textColor="#0D3B66"
+                android:inputType="number"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_total_ambulances"
+                android:labelFor="@+id/etTotalAmbulances"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etTotalAmbulances"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/default_beds_count"
+                android:textColor="#0D3B66"
+                android:inputType="number"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_available_ambulances"
+                android:labelFor="@+id/etAvailableAmbulances"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etAvailableAmbulances"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/default_ambulances_count"
+                android:textColor="#0D3B66"
+                android:inputType="number"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="18dp" />
+
+            <Button
+                android:id="@+id/btnUpdateResources"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/btn_update_resources"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_rounded"
+                android:backgroundTint="#1E6FD9" />
+        </LinearLayout>
+
+        <!-- ===== INCOMING EMERGENCY REQUESTS ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="3dp"
+            android:padding="18dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_incoming_requests"
+                android:textColor="#0D3B66"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="30dp" />
+
+            <TextView
+                android:id="@+id/tvNoRequests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/msg_no_requests"
+                android:textColor="#8CA6C2"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvEmergencyRequests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- ===== AMBULANCE FLEET TABLE ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="3dp"
+            android:padding="18dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_ambulance_fleet"
+                android:textColor="#0D3B66"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/col_driver"
+                    android:textColor="#8CA6C2"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1.4"
+                    android:layout_height="wrap_content"
+                    android:text="@string/col_phone"
+                    android:textColor="#8CA6C2"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/col_vehicle"
+                    android:textColor="#8CA6C2"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#A8CFF0"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_driver_name"
+                    android:textColor="#0D3B66"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1.4"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_driver_phone"
+                    android:textColor="#0D3B66"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sample_vehicle_number"
+                    android:textColor="#0D3B66"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAmbulanceFleet"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- ===== AMBULANCE MANAGEMENT (ADD NEW) ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="3dp"
+            android:padding="18dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_ambulance_management"
+                android:textColor="#0D3B66"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/desc_ambulance_management"
+                android:textColor="#8CA6C2"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_add_new_ambulance"
+                android:textColor="#0D3B66"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_driver_name"
+                android:labelFor="@+id/etDriverName"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etDriverName"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#0D3B66"
+                android:inputType="textPersonName"
+                android:autofillHints="name"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_driver_phone"
+                android:labelFor="@+id/etDriverPhone"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etDriverPhone"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#0D3B66"
+                android:inputType="phone"
+                android:autofillHints="phone"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_driver_email"
+                android:labelFor="@+id/etDriverEmail"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etDriverEmail"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_driver_email"
+                android:textColorHint="#8CA6C2"
+                android:textColor="#0D3B66"
+                android:inputType="textEmailAddress"
+                android:autofillHints="emailAddress"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_driver_password"
+                android:labelFor="@+id/etDriverPassword"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etDriverPassword"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/hint_driver_password"
+                android:textColorHint="#8CA6C2"
+                android:textColor="#0D3B66"
+                android:inputType="textPassword"
+                android:autofillHints="password"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_vehicle_number"
+                android:labelFor="@+id/etVehiclePlate"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etVehiclePlate"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#0D3B66"
+                android:inputType="textCapCharacters"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/label_vehicle_type"
+                android:labelFor="@+id/etVehicleType"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etVehicleType"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:textColor="#0D3B66"
+                android:inputType="text"
+                android:autofillHints="none"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="18dp" />
+
+            <Button
+                android:id="@+id/btnAddAmbulance"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/btn_add_ambulance"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_button_rounded"
+                android:backgroundTint="#1E6FD9" />
+        </LinearLayout>
+
+        <!-- ===== LIVE AMBULANCE TRACKING ===== -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="3dp"
+            android:padding="18dp"
+            android:layout_marginBottom="30dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/section_live_tracking"
+                android:textColor="#0D3B66"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="14dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_input_light"
+                android:padding="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_available_ambulances"
+                    android:textColor="#8CA6C2"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/emoji_ambulance"
+                    android:textSize="40sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/desc_live_tracking"
+                    android:textColor="#8CA6C2"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:layout_marginTop="14dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

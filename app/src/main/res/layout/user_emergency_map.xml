@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/bg_card">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚨 Emergency Sent"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+                <TextView
+                    android:id="@+id/tvSubtitleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Waiting for hospital response..."
+                    android:textSize="14sp"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnClose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Back"
+                android:textSize="12sp"
+                android:padding="8dp"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvEmergencyStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: PENDING"
+            android:textSize="12sp"
+            android:textColor="@color/red_primary"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+
+    <!-- Mapbox Map View -->
+    <com.mapbox.maps.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Ambulance Info Card -->
+    <LinearLayout
+        android:id="@+id/ambulanceInfoCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@color/bg_card"
+        android:elevation="4dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🚑 Ambulance Dispatched"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/tvAmbulanceDriver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Driver: --"
+            android:textSize="12sp"
+            android:textColor="@color/text_tertiary"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/tvAmbulanceVehicle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vehicle: --"
+            android:textSize="12sp"
+            android:textColor="@color/text_tertiary"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvAmbulancePhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Call: --"
+            android:textSize="12sp"
+            android:textColor="@color/link_blue"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvAmbulanceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📍 Location updating..."
+            android:textSize="12sp"
+            android:textColor="@color/green_safe"
+            android:layout_marginTop="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

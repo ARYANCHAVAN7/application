@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/apurva"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hospital Registration"
+            android:textColor="#0D3B66"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Register your hospital to join Suraksha"
+            android:textColor="#4A90E2"
+            android:textSize="13sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_white"
+            android:elevation="4dp"
+            android:padding="22dp">
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Hospital Name"
+                android:layout_marginTop="0dp" />
+
+            <EditText
+                android:id="@+id/etHospitalName"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="e.g. Seven Star Hospital"
+                android:textColorHint="#B8CCE0"
+                android:textColor="#0D3B66"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Email" />
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="hospital@example.com"
+                android:textColorHint="#B8CCE0"
+                android:textColor="#0D3B66"
+                android:inputType="textEmailAddress"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Phone Number" />
+
+            <EditText
+                android:id="@+id/etPhone"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="10-digit mobile number"
+                android:textColorHint="#B8CCE0"
+                android:textColor="#0D3B66"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Hospital Address" />
+
+            <EditText
+                android:id="@+id/etAddress"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Street, City, State"
+                android:textColorHint="#B8CCE0"
+                android:textColor="#0D3B66"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="License / Registration Number" />
+
+            <EditText
+                android:id="@+id/etLicenseNumber"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Hospital license ID"
+                android:textColorHint="#B8CCE0"
+                android:textColor="#0D3B66"
+                android:background="@drawable/bg_input_light"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="16dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
+                android:baselineAligned="false">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="8dp">
+
+                    <TextView
+                        style="@style/FieldLabel"
+                        android:text="Total Beds"
+                        android:layout_marginTop="0dp" />
+
+                    <EditText
+                        android:id="@+id/etTotalBeds"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="e.g. 20"
+                        android:textColorHint="#B8CCE0"
+                        android:textColor="#0D3B66"
+                        android:inputType="number"
+                        android:background="@drawable/bg_input_light"
+                        android:paddingStart="16dp"
+                        android:layout_marginTop="6dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="8dp">
+
+                    <TextView
+                        style="@style/FieldLabel"
+                        android:text="Total Ambulances"
+                        android:layout_marginTop="0dp" />
+
+                    <EditText
+                        android:id="@+id/etTotalAmbulances"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:hint="e.g. 5"
+                        android:textColorHint="#B8CCE0"
+                        android:textColor="#0D3B66"
+                        android:inputType="number"
+                        android:background="@drawable/bg_input_light"
+                        android:paddingStart="16dp"
+                        android:layout_marginTop="6dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Password" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="#1E6FD9"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:hint="Create a password"
+                    android:textColorHint="#B8CCE0"
+                    android:textColor="#0D3B66"
+                    android:inputType="textPassword"
+                    android:background="@drawable/bg_input_light"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="16dp" />
+
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Confirm Password" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:passwordToggleEnabled="true"
+                app:passwordToggleTint="#1E6FD9"
+                app:hintEnabled="false">
+
+                <EditText
+                    android:id="@+id/etConfirmPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:hint="Re-enter password"
+                    android:textColorHint="#B8CCE0"
+                    android:textColor="#0D3B66"
+                    android:inputType="textPassword"
+                    android:background="@drawable/bg_input_light"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="24dp" />
+
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:text="Register Hospital"
+                android:textColor="#FFFFFF"
+                android:textAllCaps="false"
+                android:background="@drawable/bg_card_rounded"
+                android:backgroundTint="#1E6FD9" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvGoToLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Already registered? Login"
+            android:textColor="#0D3B66"
+            android:textSize="14sp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="30dp" />
+
+    </LinearLayout>
+</ScrollView>

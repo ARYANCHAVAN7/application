@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Base -->
+    <color name="bg_root">#EAF2FB</color>
+    <color name="bg_card">#FFFFFF</color>
+    <color name="bg_card_alt">#F4F8FD</color>
+    <color name="stroke_subtle">#DCE7F5</color>
+
+    <!-- Brand red (kept for emergency accents) -->
+    <color name="red_primary">#E8283E</color>
+    <color name="red_dark">#B01C2E</color>
+    <color name="red_card_bg">#FFF1F3</color>
+    <color name="red_ring_1">#26E8283E</color>
+    <color name="red_ring_2">#12E8283E</color>
+
+    <!-- Text -->
+    <color name="text_primary">#1B2A41</color>
+    <color name="text_secondary">#5B6B82</color>
+    <color name="text_tertiary">#8A97AC</color>
+
+    <!-- Status -->
+    <color name="green_safe">#1E9E5A</color>
+    <color name="green_safe_bg">#E8F8EF</color>
+
+    <!-- Accent -->
+    <color name="heart_bg">#E8283E</color>
+    <color name="shield_muted">#B7C6DE</color>
+    <color name="blue_accent">#2E7DE0</color>
+    <color name="blue_accent_bg">#E4EEFC</color>
+    <color name="dark_bg">#090A0D</color>
+    <color name="dark_card">#121418</color>
+    <color name="role_selected">#1E6FD9</color>
+    <color name="role_unselected">#1B1D22</color>
+    <color name="role_border">#2A2E35</color>
+    <color name="input_bg">#E9F1FE</color>
+    <color name="link_blue">#4A90E2</color>
+    <color name="nice_card_bg">#E6FFFFFF</color>
+    <color name="nice_role_selected">#1E6FD9</color>
+    <color name="nice_role_unselected">#F0F4F8</color>
+    <color name="nice_role_border">#DDE6F0</color>
+    <color name="nice_input_bg">#F4F8FD</color>
+
+    <!-- Glassmorphism -->
+    <color name="glass_white">#BCFFFFFF</color>
+    <color name="glass_white_heavy">#E6FFFFFF</color>
+    <color name="glass_stroke">#33FFFFFF</color>
+</resources>
