@@ -1,0 +1,4 @@
+- [x] Fix `user_dashboard.xml` malformed attributes
+- [x] Fix `row_account_detail_dashboard.xml` malformed attributes
+- [x] Verify changes with `analyze_file`
+- [x] Final build check (optional but recommended)

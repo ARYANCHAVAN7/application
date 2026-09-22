@@ -1,0 +1,4 @@
+- [x] Add Google Login UI to `user_login.xml`
+- [x] Implement Google Login logic and shake effect in `UserLoginActivity.java`
+- [x] Implement simulated account selection and shake effect in `MainActivity.java`
+- [x] Verify UI and functionality on device
