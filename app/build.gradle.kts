@@ -28,10 +28,12 @@ android {
 
         val mapboxAccessToken = props.getProperty("MAPBOX_ACCESS_TOKEN") ?: ""
         val googleWebClientId = props.getProperty("GOOGLE_WEB_CLIENT_ID") ?: ""
+        val groqApiKey = props.getProperty("GROQ_API_KEY") ?: ""
 
         buildConfigField("String", "MAPBOX_ACCESS_TOKEN", "\"${mapboxAccessToken}\"")
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"${googleWebClientId}\"")
-        resValue("string", "mapbox_access_token", mapboxAccessToken)
+        buildConfigField("String", "GROQ_API_KEY", "\"${groqApiKey}\"")
+        manifestPlaceholders["MAPBOX_ACCESS_TOKEN"] = mapboxAccessToken
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -49,7 +51,6 @@ android {
     }
     buildFeatures {
         buildConfig = true
-        resValues = true
     }
 }
 
@@ -69,7 +70,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-location:21.3.0")
     // Mapbox Maps SDK for map functionality
     implementation(libs.mapbox.maps)
-    implementation("com.mapbox.extension:maps-style:11.29.1")
     // OkHttp for REST API calls to Mapbox Directions API
     implementation(libs.okhttp)
     testImplementation(libs.junit)

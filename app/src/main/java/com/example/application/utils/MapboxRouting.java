@@ -1,230 +1,176 @@
 package com.example.application.utils;
 
 import android.content.Context;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.example.application.BuildConfig;
+import com.example.application.R;
 import com.mapbox.geojson.LineString;
 import com.mapbox.geojson.Point;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 /**
- * Mapbox Routing/Directions Service
- * 
- * Uses Mapbox Directions API to calculate:
- * 1. Route geometry (path from ambulance to emergency)
- * 2. Route distance
- * 3. Route duration (for ETA calculation)
- * 
- * Requirements:
- * - Mapbox SDK v11.29.1 (already installed)
- * - Mapbox access token (generated from local.properties at build time)
- * - Valid GPS coordinates for origin and destination
- * 
- * Note: Uses BuildConfig.MAPBOX_ACCESS_TOKEN automatically.
- * REST API called asynchronously on background thread.
+ * Mapbox Directions API client.
+ *
+ * Fixes vs. the previous version:
+ * - callbacks are always delivered on the Android main thread (UI updates were crashing);
+ * - RouteInfo.toString() had 3 format specifiers and 2 arguments, which threw inside the
+ *   success path so every route was reported as a failure;
+ * - geometry is requested as polyline6 to match the precision used for decoding;
+ * - coordinates are formatted with Locale.US; the access token is never logged;
+ * - one shared OkHttpClient; responses are closed.
  */
 public class MapboxRouting {
 
-    private static final String TAG = "MapboxRouting";
-    private static final String DIRECTIONS_API_URL = 
-        "https://api.mapbox.com/directions/v5/mapbox/driving";
+    private static final String DIRECTIONS_API_URL =
+            "https://api.mapbox.com/directions/v5/mapbox/driving/";
 
-    /**
-     * Represents a calculated route
-     */
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+    private static final OkHttpClient CLIENT = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build();
+
     public static class RouteInfo {
-        public double distanceMeters;        // Total route distance in meters
-        public double distanceKilometers;    // Total route distance in km
-        public long durationSeconds;         // Total route duration in seconds
-        public String durationFormatted;     // Formatted duration (e.g., "12 min 30 sec")
-        public LineString geometry;          // Route geometry (polyline)
-        public Point origin;                 // Start point
-        public Point destination;            // End point
+        public double distanceMeters;
+        public double distanceKilometers;
+        public long durationSeconds;
+        public String durationFormatted;
+        public LineString geometry;
+        public Point origin;
+        public Point destination;
 
         @Override
         public String toString() {
-            return String.format(
-                "Route: %s, Duration: %s, Distance: %.1f km",
-                durationFormatted,
-                String.format(java.util.Locale.US, "%.1f km", distanceKilometers)
-            );
+            return String.format(Locale.US, "Route: %s, Distance: %.1f km",
+                    durationFormatted, distanceKilometers);
         }
     }
 
-    /**
-     * Callback interface for route results
-     */
+    /** Both methods are invoked on the main thread. */
     public interface RouteCallback {
-        /**
-         * Called when route is successfully calculated
-         */
         void onRouteSuccess(RouteInfo route);
 
-        /**
-         * Called if route calculation fails
-         */
         void onRouteFailure(String errorMessage);
     }
 
-    /**
-     * Calculate route between ambulance and emergency
-     * 
-     * This method:
-     * 1. Validates both coordinates
-     * 2. Makes async API call to Mapbox Directions API on background thread
-     * 3. Returns route via callback (not blocking)
-     * 
-     * @param context Android context
-     * @param ambulanceLatitude Ambulance current latitude
-     * @param ambulanceLongitude Ambulance current longitude
-     * @param emergencyLatitude Emergency location latitude
-     * @param emergencyLongitude Emergency location longitude
-     * @param callback Callback for result
-     */
     public static void calculateRoute(Context context,
-                                     double ambulanceLatitude, double ambulanceLongitude,
-                                     double emergencyLatitude, double emergencyLongitude,
-                                     RouteCallback callback) {
-        
-        // Validate coordinates
-        if (!HaversineDistance.isValidCoordinate(ambulanceLatitude, ambulanceLongitude) ||
-            !HaversineDistance.isValidCoordinate(emergencyLatitude, emergencyLongitude)) {
-            if (callback != null) {
-                callback.onRouteFailure("Invalid coordinates provided");
-            }
+                                      double originLatitude, double originLongitude,
+                                      double destinationLatitude, double destinationLongitude,
+                                      RouteCallback callback) {
+        if (!HaversineDistance.isValidCoordinate(originLatitude, originLongitude) ||
+                !HaversineDistance.isValidCoordinate(destinationLatitude, destinationLongitude)) {
+            postFailure(callback, "Invalid coordinates provided");
             return;
         }
 
-        // Create origin and destination points
-        Point origin = Point.fromLngLat(ambulanceLongitude, ambulanceLatitude);
-        Point destination = Point.fromLngLat(emergencyLongitude, emergencyLatitude);
+        final Point origin = Point.fromLngLat(originLongitude, originLatitude);
+        final Point destination = Point.fromLngLat(destinationLongitude, destinationLatitude);
 
-        // Make API call on background thread
         new Thread(() -> {
-            try {
-                String accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN;
-                if (accessToken == null || accessToken.trim().isEmpty()) {
-                    if (callback != null) {
-                        callback.onRouteFailure("Mapbox access token not configured");
-                    }
-                    return;
-                }
+            String accessToken = BuildConfig.MAPBOX_ACCESS_TOKEN;
+            if (accessToken == null || accessToken.trim().isEmpty()) {
+                try {
+                    accessToken = context.getString(R.string.mapbox_access_token);
+                } catch (Exception ignored) {}
+            }
+            if (accessToken == null || accessToken.trim().isEmpty()) {
+                postFailure(callback, "Mapbox access token not configured (MAPBOX_ACCESS_TOKEN in local.properties)");
+                return;
+            }
 
-                // Build API URL
-                String url = String.format("%s/%f,%f;%f,%f?overview=full&access_token=%s",
-                    DIRECTIONS_API_URL,
-                    ambulanceLongitude, ambulanceLatitude,
-                    emergencyLongitude, emergencyLatitude,
-                    accessToken);
-
-                // Make HTTP request
-                OkHttpClient client = new OkHttpClient();
-                Request request = new Request.Builder()
-                    .url(url)
+            String coordinates = String.format(Locale.US, "%.6f,%.6f;%.6f,%.6f",
+                    originLongitude, originLatitude, destinationLongitude, destinationLatitude);
+            HttpUrl base = HttpUrl.parse(DIRECTIONS_API_URL + coordinates);
+            if (base == null) {
+                postFailure(callback, "Could not build Directions URL");
+                return;
+            }
+            HttpUrl url = base.newBuilder()
+                    .addQueryParameter("overview", "full")
+                    .addQueryParameter("geometries", "polyline6")
+                    .addQueryParameter("access_token", accessToken)
                     .build();
 
-                try (Response response = client.newCall(request).execute()) {
-                    if (!response.isSuccessful()) {
-                        if (callback != null) {
-                            callback.onRouteFailure("API returned error: " + response.code());
-                        }
-                        return;
-                    }
-
-                    String responseBody = response.body() != null ? response.body().string() : "";
-                    JSONObject json = new JSONObject(responseBody);
-
-                    // Parse response
-                    if (!json.has("routes") || json.getJSONArray("routes").length() == 0) {
-                        if (callback != null) {
-                            callback.onRouteFailure("No route found");
-                        }
-                        return;
-                    }
-
-                    JSONObject route = json.getJSONArray("routes").getJSONObject(0);
-                    RouteInfo routeInfo = new RouteInfo();
-                    routeInfo.distanceMeters = route.getDouble("distance");
-                    routeInfo.distanceKilometers = routeInfo.distanceMeters / 1000.0;
-                    routeInfo.durationSeconds = (long) route.getDouble("duration");
-                    routeInfo.durationFormatted = formatDuration(routeInfo.durationSeconds);
-                    String geometry = route.getString("geometry");
-                    routeInfo.geometry = LineString.fromPolyline(geometry, 6);
-                    routeInfo.origin = origin;
-                    routeInfo.destination = destination;
-
-                    Log.d(TAG, "Route calculated: " + routeInfo);
-
-                    if (callback != null) {
-                        callback.onRouteSuccess(routeInfo);
-                    }
+            Request request = new Request.Builder().url(url).build();
+            try (Response response = CLIENT.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    SurakshaLog.warn(SurakshaLog.MAP, "directions http error", "code=" + response.code());
+                    postFailure(callback, "Directions API returned HTTP " + response.code());
+                    return;
                 }
+                String body = response.body() != null ? response.body().string() : "";
+                JSONObject json = new JSONObject(body);
+                if (!json.has("routes") || json.getJSONArray("routes").length() == 0) {
+                    postFailure(callback, "No route found");
+                    return;
+                }
+                JSONObject route = json.getJSONArray("routes").getJSONObject(0);
+                RouteInfo info = new RouteInfo();
+                info.distanceMeters = route.getDouble("distance");
+                info.distanceKilometers = info.distanceMeters / 1000.0;
+                info.durationSeconds = (long) route.getDouble("duration");
+                info.durationFormatted = formatDuration(info.durationSeconds);
+                info.geometry = LineString.fromPolyline(route.getString("geometry"), 6);
+                info.origin = origin;
+                info.destination = destination;
 
+                SurakshaLog.info(SurakshaLog.MAP, "route calculated", info.toString());
+                MAIN.post(() -> {
+                    if (callback != null) callback.onRouteSuccess(info);
+                });
             } catch (Exception e) {
-                Log.e(TAG, "Error calculating route", e);
-                if (callback != null) {
-                    callback.onRouteFailure("Error: " + e.getMessage());
-                }
+                SurakshaLog.error(SurakshaLog.MAP, "directions request", e);
+                postFailure(callback, "Route error: " + e.getClass().getSimpleName());
             }
-        }).start();
+        }, "suraksha-directions").start();
     }
 
-    /**
-     * Calculate ETA (Estimated Time of Arrival)
-     * 
-     * @param currentTimeMs Current system time in milliseconds
-     * @param routeDurationSeconds Route duration from Mapbox Directions API
-     * @return ETA as System.currentTimeMillis() value
-     */
+    private static void postFailure(RouteCallback callback, String message) {
+        MAIN.post(() -> {
+            if (callback != null) callback.onRouteFailure(message);
+        });
+    }
+
     public static long calculateETA(long currentTimeMs, long routeDurationSeconds) {
         return currentTimeMs + (routeDurationSeconds * 1000);
     }
 
-    /**
-     * Format route duration for display
-     * 
-     * @param durationSeconds Duration in seconds
-     * @return Formatted string (e.g., "12 min 30 sec", "5 min")
-     */
     public static String formatDuration(long durationSeconds) {
         long minutes = durationSeconds / 60;
         long seconds = durationSeconds % 60;
-
         if (minutes > 0 && seconds > 0) {
-            return String.format("%d min %d sec", minutes, seconds);
+            return String.format(Locale.US, "%d min %d sec", minutes, seconds);
         } else if (minutes > 0) {
-            return String.format("%d min", minutes);
-        } else {
-            return String.format("%d sec", seconds);
+            return String.format(Locale.US, "%d min", minutes);
         }
+        return String.format(Locale.US, "%d sec", seconds);
     }
 
-    /**
-     * Format ETA for display
-     * 
-     * @param etaTimeMs ETA as milliseconds since epoch
-     * @return Formatted string (e.g., "2:45 PM")
-     */
     public static String formatETA(long etaTimeMs) {
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("h:mm a", java.util.Locale.US);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("h:mm a", Locale.US);
         return sdf.format(new java.util.Date(etaTimeMs));
     }
 
-    /**
-     * Get human-readable ETA display string
-     * 
-     * @param durationSeconds Route duration from API
-     * @return String like "Arriving in approximately 12 min"
-     */
     public static String getETADescription(long durationSeconds) {
         return "Arriving in approximately " + formatDuration(durationSeconds);
+    }
+
+    /** "3.4 km | ETA 7 min (2:45 PM)" */
+    public static String formatDistanceAndEta(RouteInfo route) {
+        return String.format(Locale.US, "%.1f km | ETA %s (%s)",
+                route.distanceKilometers,
+                formatDuration(route.durationSeconds),
+                formatETA(calculateETA(System.currentTimeMillis(), route.durationSeconds)));
     }
 }

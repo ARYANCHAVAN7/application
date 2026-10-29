@@ -9,6 +9,12 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+/app/build
+/Suraksha-Latest.apk
+/app/*.apk
+/app/*.aab
+/app/release/
+/app/debug/
 /captures
 .externalNativeBuild
 .cxx
@@ -16,6 +22,7 @@ local.properties
 
 # Crash logs
 *.log
+*.orig
 
 # IDE / Tooling artifacts
 .artifacts/

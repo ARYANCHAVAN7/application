@@ -81,6 +81,13 @@ public class HaversineDistance {
         if (latitude == null || longitude == null) {
             return false;
         }
+        if (Double.isNaN(latitude) || Double.isNaN(longitude)) {
+            return false;
+        }
+        // (0,0) is the default of an unset coordinate, not a real hospital/ambulance position.
+        if (latitude == 0.0 && longitude == 0.0) {
+            return false;
+        }
         return latitude >= -90.0 && latitude <= 90.0 &&
                longitude >= -180.0 && longitude <= 180.0;
     }
@@ -93,9 +100,9 @@ public class HaversineDistance {
      */
     public static String formatDistance(double distanceMeters) {
         if (distanceMeters >= 1000) {
-            return String.format("%.1f km", distanceMeters / 1000.0);
+            return String.format(java.util.Locale.US, "%.1f km", distanceMeters / 1000.0);
         } else {
-            return String.format("%.0f m", distanceMeters);
+            return String.format(java.util.Locale.US, "%.0f m", distanceMeters);
         }
     }
 }

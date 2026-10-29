@@ -26,7 +26,7 @@
     <string name="default_emergencies_count">0</string>
     <string name="label_response_rate">RESPONSE RATE</string>
     <string name="default_response_rate">94%</string>
-    <string name="response_rate_trend">↑ 3%% from last week</string>
+    <string name="response_rate_trend">↑ 3% from last week</string>
     <string name="section_resource_management">Resource Management</string>
     <string name="desc_resource_management">Update beds and ambulances for your hospital account.</string>
     <string name="label_total_beds">Total Beds</string>

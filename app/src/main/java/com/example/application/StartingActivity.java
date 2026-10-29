@@ -14,7 +14,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
+import com.example.application.utils.FirestoreValues;
+import com.example.application.utils.SurakshaLog;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class StartingActivity extends AppCompatActivity {
@@ -104,21 +107,103 @@ public class StartingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Restores a session only when FirebaseAuth has a current user AND the Firestore profile
+     * confirms the role. Anything inconsistent is signed out (prevents stale-role redirect loops).
+     */
     private void checkExistingSession() {
-        if (mAuth.getCurrentUser() != null) {
-            String uid = mAuth.getCurrentUser().getUid();
-            FirebaseFirestore.getInstance().collection("users").document(uid).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String role = documentSnapshot.getString("role");
-                            if ("hospital".equals(role)) {
-                                startActivity(new Intent(this, HospitalActivity.class));
-                            } else {
-                                startActivity(new Intent(this, DashboardActivity.class));
-                            }
-                            finish();
+        FirebaseUser current = mAuth.getCurrentUser();
+        if (current == null) return;
+        String uid = current.getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        if (current.isAnonymous()) {
+            // Ambulance driver session (anonymous auth + driverSessions/{uid}).
+            db.collection("driverSessions").document(uid).get()
+                    .addOnSuccessListener(session -> {
+                        String ambulanceId = session.exists() ? session.getString("ambulanceId") : null;
+                        if (ambulanceId == null) {
+                            SurakshaLog.info(SurakshaLog.AUTH, "anonymous session without driver session; signing out");
+                            mAuth.signOut();
+                            return;
                         }
+                        SurakshaLog.info(SurakshaLog.AUTH, "restoring driver session", "ambulanceId=" + ambulanceId);
+                        Intent intent = new Intent(this, AmbulanceActivity.class);
+                        intent.putExtra(AmbulanceActivity.EXTRA_AMBULANCE_ID, ambulanceId);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        SurakshaLog.error(SurakshaLog.AUTH, "restore driver session", e);
+                        mAuth.signOut();
                     });
+            return;
         }
+
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (!documentSnapshot.exists()) {
+                        // Check if an ambulance driver session exists for this account
+                        db.collection("driverSessions").document(uid).get()
+                                .addOnSuccessListener(driverSession -> {
+                                    String ambId = driverSession.exists() ? driverSession.getString("ambulanceId") : null;
+                                    if (ambId != null && !ambId.trim().isEmpty()) {
+                                        SurakshaLog.info(SurakshaLog.AUTH, "restoring driver session from driverSessions", "ambulanceId=" + ambId);
+                                        Intent intent = new Intent(this, AmbulanceActivity.class);
+                                        intent.putExtra(AmbulanceActivity.EXTRA_AMBULANCE_ID, ambId);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        SurakshaLog.warn(SurakshaLog.AUTH, "session without profile; signing out", "uid=" + uid);
+                                        mAuth.signOut();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    SurakshaLog.warn(SurakshaLog.AUTH, "session without profile; signing out", "uid=" + uid);
+                                    mAuth.signOut();
+                                });
+                        return;
+                    }
+                    String role = documentSnapshot.getString("role");
+                    if (role != null) role = role.trim();
+                    if ("hospital".equals(role)) {
+                        if (FirestoreValues.getBoolean(documentSnapshot, "isVerified")) {
+                            startActivity(new Intent(this, HospitalActivity.class));
+                            finish();
+                        } else {
+                            SurakshaLog.info(SurakshaLog.AUTH, "unverified hospital session; signing out", "uid=" + uid);
+                            mAuth.signOut();
+                        }
+                    } else if ("user".equals(role) || "admin".equals(role)) {
+                        startActivity(new Intent(this, DashboardActivity.class));
+                        finish();
+                    } else if ("ambulance".equals(role)) {
+                        String ambId = documentSnapshot.getString("ambulanceId");
+                        if (ambId != null && !ambId.trim().isEmpty()) {
+                            SurakshaLog.info(SurakshaLog.AUTH, "restoring ambulance session from user profile", "ambulanceId=" + ambId);
+                            Intent intent = new Intent(this, AmbulanceActivity.class);
+                            intent.putExtra(AmbulanceActivity.EXTRA_AMBULANCE_ID, ambId);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            db.collection("driverSessions").document(uid).get()
+                                    .addOnSuccessListener(sess -> {
+                                        String aId = sess.exists() ? sess.getString("ambulanceId") : null;
+                                        if (aId != null && !aId.trim().isEmpty()) {
+                                            Intent intent = new Intent(this, AmbulanceActivity.class);
+                                            intent.putExtra(AmbulanceActivity.EXTRA_AMBULANCE_ID, aId);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            mAuth.signOut();
+                                        }
+                                    }).addOnFailureListener(e -> mAuth.signOut());
+                        }
+                    } else {
+                        SurakshaLog.warn(SurakshaLog.AUTH, "unknown role; signing out", "uid=" + uid, "role=" + role);
+                        mAuth.signOut();
+                    }
+                })
+                .addOnFailureListener(e -> SurakshaLog.error(SurakshaLog.AUTH, "restore session profile", e, "uid=" + uid));
     }
 }

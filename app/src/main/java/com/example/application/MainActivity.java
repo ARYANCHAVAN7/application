@@ -18,6 +18,8 @@ import androidx.credentials.exceptions.GetCredentialException;
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.example.application.utils.FirestoreValues;
+import com.example.application.utils.SurakshaLog;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
@@ -65,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                                         loginCard.startAnimation(shake);
                                     }
                                     
+                                    SurakshaLog.error(SurakshaLog.AUTH, "signInWithEmailAndPassword(hospital)", task.getException());
                                     String errorMsg = "Login failed";
                                     if (task.getException() instanceof FirebaseAuthInvalidUserException) {
                                         errorMsg = "Hospital account not found. Please register.";
@@ -142,7 +145,9 @@ public class MainActivity extends AppCompatActivity {
                     if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
                         checkHospitalRole(mAuth.getCurrentUser().getUid());
                     } else {
-                        Toast.makeText(MainActivity.this, "Firebase Auth failed", Toast.LENGTH_SHORT).show();
+                        SurakshaLog.error(SurakshaLog.AUTH, "signInWithCredential(google,hospital)", task.getException());
+                        Toast.makeText(MainActivity.this,
+                                SurakshaLog.userMessage("Firebase Auth failed", task.getException()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -162,12 +167,8 @@ public class MainActivity extends AppCompatActivity {
                         String role = document.getString("role");
                         if (role != null) role = role.trim();
                         
-                        boolean isVerified = false;
-                        if (document.contains("isVerified")) {
-                            Object val = document.get("isVerified");
-                            if (val instanceof Boolean) isVerified = (Boolean) val;
-                            else if (val instanceof String) isVerified = "true".equalsIgnoreCase((String) val);
-                        }
+                        boolean isVerified = FirestoreValues.getBoolean(document, "isVerified");
+                        String approvalStatus = document.getString("approvalStatus");
                         
                         if ("hospital".equals(role)) {
                             if (isVerified) {
@@ -176,16 +177,23 @@ public class MainActivity extends AppCompatActivity {
                                 startActivity(intent);
                                 finish();
                             } else {
+                                SurakshaLog.info(SurakshaLog.AUTH, "hospital login blocked: not verified",
+                                        "uid=" + userId, "approvalStatus=" + approvalStatus);
                                 mAuth.signOut();
-                                Toast.makeText(MainActivity.this, "Account pending verification. Please contact admin to verify License: " + document.getString("licenseNumber"), Toast.LENGTH_LONG).show();
+                                String msg = "rejected".equals(approvalStatus)
+                                        ? "Hospital registration was rejected by the admin."
+                                        : "Account pending admin verification. License: " + document.getString("licenseNumber");
+                                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
                             }
                         } else {
                             mAuth.signOut();
                             Toast.makeText(MainActivity.this, "Access Denied: Registered as " + role + ". Use the User portal.", Toast.LENGTH_LONG).show();
                         }
                     } else {
+                        SurakshaLog.error(SurakshaLog.AUTH, "read users/{uid} for hospital role check", task.getException(), "uid=" + userId);
                         mAuth.signOut();
-                        Toast.makeText(MainActivity.this, "Failed to verify account role", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this,
+                                SurakshaLog.userMessage("Failed to verify account role", task.getException()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

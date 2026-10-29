@@ -86,8 +86,8 @@ public class GeoRadius {
         java.util.List<DocumentSnapshot> filtered = new java.util.ArrayList<>();
         
         for (DocumentSnapshot doc : documents) {
-            Double latitude = doc.getDouble("latitude");
-            Double longitude = doc.getDouble("longitude");
+            Double latitude = FirestoreValues.getDouble(doc, "latitude");
+            Double longitude = FirestoreValues.getDouble(doc, "longitude");
             
             if (HaversineDistance.isValidCoordinate(latitude, longitude)) {
                 if (isWithinRadius(centerLatitude, centerLongitude,
@@ -115,14 +115,16 @@ public class GeoRadius {
         java.util.List<DocumentSnapshot> sorted = new java.util.ArrayList<>(documents);
         
         sorted.sort((doc1, doc2) -> {
-            Double lat1 = doc1.getDouble("latitude");
-            Double lon1 = doc1.getDouble("longitude");
-            Double lat2 = doc2.getDouble("latitude");
-            Double lon2 = doc2.getDouble("longitude");
-            
-            if (!HaversineDistance.isValidCoordinate(lat1, lon1) ||
-                !HaversineDistance.isValidCoordinate(lat2, lon2)) {
-                return 0;
+            Double lat1 = FirestoreValues.getDouble(doc1, "latitude");
+            Double lon1 = FirestoreValues.getDouble(doc1, "longitude");
+            Double lat2 = FirestoreValues.getDouble(doc2, "latitude");
+            Double lon2 = FirestoreValues.getDouble(doc2, "longitude");
+
+            boolean valid1 = HaversineDistance.isValidCoordinate(lat1, lon1);
+            boolean valid2 = HaversineDistance.isValidCoordinate(lat2, lon2);
+            if (!valid1 || !valid2) {
+                // Invalid coordinates always sort last.
+                return Boolean.compare(!valid1, !valid2);
             }
             
             double dist1 = HaversineDistance.distanceInMeters(
@@ -172,5 +174,41 @@ public class GeoRadius {
      */
     public static String formatRadius(double radiusMeters) {
         return HaversineDistance.formatDistance(radiusMeters);
+    }
+
+    /** Maximum realistic emergency response radius (50 km). Hospitals further than this will never be dispatched. */
+    public static final double MAX_DISPATCH_RADIUS_METERS = 50000.0;
+
+    /** Emergency search tiers (expanding from local neighborhood to city-wide to 50km district perimeter). */
+    public static final double[] EMERGENCY_SEARCH_TIERS_METERS = {
+            RADIUS_5KM, RADIUS_10KM, RADIUS_20KM, MAX_DISPATCH_RADIUS_METERS
+    };
+
+    /** Result of an expanding-radius search. radiusMeters < 0 means no hospital was within maximum dispatch range. */
+    public static class SearchResult {
+        public final java.util.List<DocumentSnapshot> documents;
+        public final double radiusMeters;
+
+        SearchResult(java.util.List<DocumentSnapshot> documents, double radiusMeters) {
+            this.documents = documents;
+            this.radiusMeters = radiusMeters;
+        }
+    }
+
+    /**
+     * Searches 5 km, 10 km, 20 km, and 50 km in order and returns the first non-empty tier, sorted
+     * nearest-first. If no verified hospital lies within the 50 km emergency perimeter, an empty list
+     * is returned so the patient is directed to dial 108 / 112 instead of dispatching from distant cities.
+     */
+    public static SearchResult findWithinExpandingRadius(double centerLatitude, double centerLongitude,
+                                                         java.util.List<DocumentSnapshot> documents) {
+        for (double radius : EMERGENCY_SEARCH_TIERS_METERS) {
+            java.util.List<DocumentSnapshot> within = filterByRadius(centerLatitude, centerLongitude, documents, radius);
+            if (!within.isEmpty()) {
+                return new SearchResult(sortByDistance(centerLatitude, centerLongitude, within), radius);
+            }
+        }
+        // No hospital within 50 km emergency response boundary
+        return new SearchResult(new java.util.ArrayList<>(), -1);
     }
 }

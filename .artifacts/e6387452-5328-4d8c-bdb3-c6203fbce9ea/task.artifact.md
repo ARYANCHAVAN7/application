@@ -1,6 +1,0 @@
-- `[x]` Create implementation plan
-- `[x]` Add advanced features to Ambulance Dashboard
-    - `[x]` Add new strings to `strings.xml`
-    - `[x]` Implement collapsible medical info in `ambulence_dashboard.xml`
-    - `[x]` Add toggle logic and enable traffic layer in `AmbulanceActivity.java`
-- `[x]` Verify changes and create walkthrough

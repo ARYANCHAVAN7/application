@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "903850805671",
-    "project_id": "suraksha-d0ac8",
-    "storage_bucket": "suraksha-d0ac8.firebasestorage.app"
+    "project_number": "463855120889",
+    "project_id": "suraksha-emergency-app",
+    "storage_bucket": "suraksha-emergency-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:903850805671:android:a33d2074ddc44247c48e82",
+        "mobilesdk_app_id": "1:463855120889:android:b2a35add97fc600fcdcd28",
         "android_client_info": {
           "package_name": "com.example.application"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "463855120889-19vufnctkaq8oj6jkc0us49a2sjkram7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDS2Bh7IQmU1aCjC3MBRt9Qei7Bzt7EAIU"
+          "current_key": "AIzaSyDuJXOteS-frSe6u3J6GCaaLmO9GoakqEk"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "463855120889-19vufnctkaq8oj6jkc0us49a2sjkram7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
