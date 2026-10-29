@@ -342,8 +342,4 @@ Security rules live in `firestore.rules`; composite indexes live in `firestore.i
 
 ---
 
-## Author
-
-**Apurva2004coder** — [github.com/Apurva2004coder](https://github.com/Apurva2004coder)
-
 > This project is intended for educational and emergency-response prototyping purposes. It is not a substitute for professional medical or emergency services. Always call your local emergency number (e.g. **108**) in a real emergency.
