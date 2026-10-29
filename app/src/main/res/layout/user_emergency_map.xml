@@ -45,6 +45,15 @@
             </LinearLayout>
 
             <Button
+                android:id="@+id/btnRecenter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recenter"
+                android:textSize="12sp"
+                android:padding="8dp"
+                android:layout_marginStart="8dp" />
+
+            <Button
                 android:id="@+id/btnClose"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

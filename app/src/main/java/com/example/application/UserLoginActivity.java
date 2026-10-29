@@ -19,13 +19,13 @@ import androidx.credentials.exceptions.GetCredentialException;
 
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+import com.example.application.utils.SurakshaLog;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.HashMap;
@@ -50,10 +50,6 @@ public class UserLoginActivity extends AppCompatActivity {
         CardView loginCard = findViewById(R.id.loginCard);
         EditText etEmail = findViewById(R.id.etEmail);
         EditText etPassword = findViewById(R.id.etPassword);
-        String prefillEmail = getIntent().getStringExtra("prefill_email");
-        if (prefillEmail != null && !prefillEmail.trim().isEmpty()) {
-            etEmail.setText(prefillEmail);
-        }
         Button btnSignIn = findViewById(R.id.btnSignIn);
         Button btnGoogleLogin = findViewById(R.id.btnGoogleLogin);
         TextView tvRegister = findViewById(R.id.tvRegister);
@@ -82,6 +78,7 @@ public class UserLoginActivity extends AppCompatActivity {
                             Animation shake = AnimationUtils.loadAnimation(UserLoginActivity.this, R.anim.shake);
                             loginCard.startAnimation(shake);
                             
+                            SurakshaLog.error(SurakshaLog.AUTH, "signInWithEmailAndPassword(user)", task.getException());
                             String errorMsg = "Login failed";
                             if (task.getException() instanceof FirebaseAuthInvalidUserException) {
                                 errorMsg = "Account not found. Please register first.";
@@ -149,6 +146,9 @@ public class UserLoginActivity extends AppCompatActivity {
                         String userId = mAuth.getCurrentUser().getUid();
                         // For Google login, if profile doesn't exist, create it automatically
                         db.collection("users").document(userId).get().addOnCompleteListener(dbTask -> {
+                            if (!dbTask.isSuccessful()) {
+                                SurakshaLog.error(SurakshaLog.AUTH, "read profile after Google sign-in", dbTask.getException(), "uid=" + userId);
+                            }
                             if (dbTask.isSuccessful() && dbTask.getResult() != null && !dbTask.getResult().exists()) {
                                 createBasicUserProfile(userId, mAuth.getCurrentUser().getDisplayName(), mAuth.getCurrentUser().getEmail());
                             } else {
@@ -156,13 +156,17 @@ public class UserLoginActivity extends AppCompatActivity {
                             }
                         });
                     } else {
-                        Toast.makeText(UserLoginActivity.this, "Firebase Auth failed", Toast.LENGTH_SHORT).show();
+                        SurakshaLog.error(SurakshaLog.AUTH, "signInWithCredential(google,user)", task.getException());
+                        Toast.makeText(UserLoginActivity.this,
+                                SurakshaLog.userMessage("Firebase Auth failed", task.getException()), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     private void createBasicUserProfile(String userId, String name, String email) {
         Map<String, Object> user = new HashMap<>();
+        user.put("uid", userId);
+        user.put("name", name != null ? name : "Google User");
         user.put("fullName", name != null ? name : "Google User");
         user.put("email", email);
         user.put("role", "user");
@@ -179,11 +183,9 @@ public class UserLoginActivity extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    String error = e instanceof FirebaseFirestoreException
-                            && ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.PERMISSION_DENIED
-                            ? "Permission denied by Firestore rules. Ask the Firebase project owner to allow authenticated profile creation."
-                            : (e.getMessage() != null ? e.getMessage() : "Unknown Firestore error");
-                    Toast.makeText(this, "Failed to create profile: " + error, Toast.LENGTH_LONG).show();
+                    SurakshaLog.error(SurakshaLog.AUTH, "create users/{uid} (google user)", e, "uid=" + userId);
+                    mAuth.signOut();
+                    Toast.makeText(this, "Failed to create profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -194,6 +196,7 @@ public class UserLoginActivity extends AppCompatActivity {
                         DocumentSnapshot document = task.getResult();
                         
                         if (!document.exists()) {
+                            SurakshaLog.warn(SurakshaLog.AUTH, "user login without profile", "uid=" + userId);
                             mAuth.signOut();
                             Toast.makeText(UserLoginActivity.this, "Profile not found in database. Try registering again with this email.", Toast.LENGTH_LONG).show();
                             return;
@@ -211,6 +214,7 @@ public class UserLoginActivity extends AppCompatActivity {
                             Toast.makeText(UserLoginActivity.this, "Access Denied: This is a User-only portal. You are registered as: " + role, Toast.LENGTH_LONG).show();
                         }
                     } else {
+                        SurakshaLog.error(SurakshaLog.AUTH, "read users/{uid} for role check", task.getException(), "uid=" + userId);
                         mAuth.signOut();
                         String error = task.getException() != null ? task.getException().getMessage() : "Unknown verification error";
                         Toast.makeText(UserLoginActivity.this, "Verification failed: " + error, Toast.LENGTH_LONG).show();

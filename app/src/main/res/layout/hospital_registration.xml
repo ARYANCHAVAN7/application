@@ -237,6 +237,60 @@
                     android:paddingEnd="16dp" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Hospital location (required for nearest-hospital matching)"
+                android:textColor="#0D3B66"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etLatitude"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:autofillHints="none"
+                    android:background="@drawable/bg_input_light"
+                    android:hint="Latitude"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="#0D3B66"
+                    android:textColorHint="#B8CCE0" />
+
+                <EditText
+                    android:id="@+id/etLongitude"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:autofillHints="none"
+                    android:background="@drawable/bg_input_light"
+                    android:hint="Longitude"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="#0D3B66"
+                    android:textColorHint="#B8CCE0" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnUseCurrentLocation"
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:layout_marginTop="8dp"
+                android:text="Use my current location"
+                android:textAllCaps="false" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="24dp" />

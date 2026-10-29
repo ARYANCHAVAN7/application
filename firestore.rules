@@ -1,0 +1,222 @@
+rules_version = '2';
+
+// SURAKSHA Firestore rules — target project: suraksha-emergency-app
+//
+// Identity model (no custom claims are used anywhere):
+//   * users / hospitals / admins : Firebase email (or Google) accounts; role + isVerified live in users/{uid}.
+//   * ambulance drivers          : Firebase ANONYMOUS accounts bound to one ambulance through
+//                                  driverSessions/{uid}, which can only be created with a valid
+//                                  ambulanceLogins/{sha256(hospitalName|securityNumber)} key.
+//
+// KNOWN LIMITATION: a driver login key is derived from hospitalName + securityNumber. Rules cannot
+// rate-limit guesses, so short security numbers can be brute-forced online. The app enforces >= 6
+// characters; for production add Firebase App Check and move login to a Cloud Function.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------- helpers
+    function signedIn() { return request.auth != null; }
+    function isAnon() { return signedIn() && request.auth.token.firebase.sign_in_provider == 'anonymous'; }
+    function isAccount() { return signedIn() && !isAnon(); }
+
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function hasProfile() { return exists(userPath(request.auth.uid)); }
+    function me() { return get(userPath(request.auth.uid)).data; }
+
+    function isAdmin() { return isAccount() && hasProfile() && me().role == 'admin'; }
+    function isVerifiedHospital() {
+      return isAccount() && hasProfile() && me().role == 'hospital' && me().isVerified == true;
+    }
+    function isEndUser() { return isAccount() && hasProfile() && me().role in ['user', 'admin']; }
+    function isVerifiedHospitalId(hid) {
+      let h = get(userPath(hid)).data;
+      return h.role == 'hospital' && h.isVerified == true;
+    }
+
+    function sessionPath() { return /databases/$(database)/documents/driverSessions/$(request.auth.uid); }
+    function isDriver() {
+      return signedIn() && exists(sessionPath())
+        && (!('loginKey' in get(sessionPath()).data)
+            || exists(/databases/$(database)/documents/ambulanceLogins/$(get(sessionPath()).data.loginKey)));
+    }
+    function driverAmbulanceId() { return get(sessionPath()).data.ambulanceId; }
+    function isDriverOf(ambulanceId) { return isDriver() && driverAmbulanceId() == ambulanceId; }
+
+    function changedKeys() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function statusMove(from, to) { return resource.data.status == from && request.resource.data.status == to; }
+    function sameAmbulance() { return request.resource.data.ambulanceId == resource.data.ambulanceId; }
+    function sameHospital() { return request.resource.data.hospitalId == resource.data.hospitalId; }
+
+    // ---------------------------------------------------------------- users
+    match /users/{uid} {
+      allow get: if signedIn() && request.auth.uid == uid;
+      // Hospital selection by patients and by hospitals forwarding a rejected emergency.
+      allow read: if isAccount() && resource.data.role == 'hospital' && resource.data.isVerified == true;
+      allow read: if isAdmin();
+
+      allow create: if isAccount() && request.auth.uid == uid
+        && (
+          (request.resource.data.role == 'user'
+             && !('isVerified' in request.resource.data)
+             && !('approvalStatus' in request.resource.data))
+          || (request.resource.data.role == 'hospital'
+             && request.resource.data.isVerified is bool
+             && request.resource.data.approvalStatus in ['pending', 'approved'])
+          || (request.resource.data.role == 'ambulance'
+             && request.resource.data.ambulanceId is string)
+        );
+
+      // Owners may edit their profile / resources but never role or uid.
+      allow update: if isAccount() && request.auth.uid == uid
+        && !changedKeys().hasAny(['role', 'uid', 'reviewedBy', 'reviewedAt']);
+
+      // Admin approval / rejection of hospitals.
+      allow update: if isAdmin() && resource.data.role == 'hospital'
+        && changedKeys().hasOnly(['isVerified', 'approvalStatus', 'reviewedBy', 'reviewedAt'])
+        && request.resource.data.isVerified is bool
+        && request.resource.data.approvalStatus in ['approved', 'rejected'];
+
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------------- emergencies
+    match /emergencies/{emergencyId} {
+      allow read: if isAccount() && resource.data.userId == request.auth.uid;
+      allow read: if isVerifiedHospital() && resource.data.hospitalId == request.auth.uid;
+      allow read: if isDriver() && resource.data.ambulanceId == driverAmbulanceId();
+
+      allow create: if isEndUser()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.emergencyId == emergencyId
+        && request.resource.data.status == 'HOSPITAL_REQUESTED'
+        && request.resource.data.latitude is number
+        && request.resource.data.longitude is number
+        && request.resource.data.hospitalId is string
+        && isVerifiedHospitalId(request.resource.data.hospitalId)
+        && request.resource.data.get('ambulanceId', null) == null;
+
+      // Assigned (verified) hospital: accept / forward / terminal reject / dispatch.
+      allow update: if isVerifiedHospital() && resource.data.hospitalId == request.auth.uid
+        && !changedKeys().hasAny(['userId', 'emergencyId', 'latitude', 'longitude', 'timestamp'])
+        && (
+          (statusMove('HOSPITAL_REQUESTED', 'HOSPITAL_ACCEPTED') && sameHospital())
+          || (statusMove('HOSPITAL_REQUESTED', 'HOSPITAL_REQUESTED')
+               && request.resource.data.hospitalId != resource.data.hospitalId
+               && request.resource.data.rejectedHospitalIds.hasAll([request.auth.uid])
+               && !(request.resource.data.hospitalId in request.resource.data.rejectedHospitalIds)
+               && isVerifiedHospitalId(request.resource.data.hospitalId))
+          || (statusMove('HOSPITAL_REQUESTED', 'HOSPITAL_REJECTED') && sameHospital())
+          || (resource.data.status in ['HOSPITAL_ACCEPTED', 'DRIVER_REJECTED']
+               && request.resource.data.status == 'AMBULANCE_DISPATCHED'
+               && sameHospital()
+               && resource.data.get('ambulanceId', null) == null
+               && request.resource.data.ambulanceId is string
+               && get(/databases/$(database)/documents/ambulances/$(request.resource.data.ambulanceId)).data.hospitalId
+                    == request.auth.uid)
+          || (resource.data.status in ['AMBULANCE_DISPATCHED', 'DRIVER_ACCEPTED', 'AMBULANCE_ARRIVED', 'PATIENT_PICKED_UP', 'EN_ROUTE_TO_HOSPITAL']
+               && sameHospital())
+        );
+
+      // Assigned driver: accept / reject / arrived / picked up / en route / completed.
+      allow update: if isDriver() && resource.data.ambulanceId == driverAmbulanceId()
+        && changedKeys().hasOnly(['status', 'ambulanceId', 'rejectedAmbulanceIds', 'driverAcceptedAt',
+                                  'driverRejectedAt', 'arrivedAt', 'pickedUpAt', 'enRouteAt',
+                                  'completedAt', 'updatedAt'])
+        && (
+          (statusMove('AMBULANCE_DISPATCHED', 'DRIVER_ACCEPTED') && sameAmbulance())
+          || (statusMove('AMBULANCE_DISPATCHED', 'DRIVER_REJECTED')
+               && request.resource.data.ambulanceId == null
+               && request.resource.data.rejectedAmbulanceIds.hasAll([resource.data.ambulanceId]))
+          || (statusMove('DRIVER_ACCEPTED', 'AMBULANCE_ARRIVED') && sameAmbulance())
+          || (statusMove('AMBULANCE_ARRIVED', 'PATIENT_PICKED_UP') && sameAmbulance())
+          || (statusMove('PATIENT_PICKED_UP', 'EN_ROUTE_TO_HOSPITAL') && sameAmbulance())
+          || (statusMove('EN_ROUTE_TO_HOSPITAL', 'COMPLETED') && sameAmbulance())
+        );
+
+      // Owning patient: cancel emergency or mark expired before pickup
+      allow update: if isEndUser() && resource.data.userId == request.auth.uid
+        && resource.data.status in ['HOSPITAL_REQUESTED', 'HOSPITAL_ACCEPTED', 'AMBULANCE_DISPATCHED', 'DRIVER_ACCEPTED', 'DRIVER_REJECTED', 'AMBULANCE_ARRIVED']
+        && request.resource.data.status in ['CANCELLED', 'EXPIRED']
+        && changedKeys().hasOnly(['status', 'updatedAt', 'cancelledAt', 'cancellationReason']);
+
+      allow delete: if false; // emergency history is preserved
+    }
+
+    // ---------------------------------------------------------------- ambulances (fleet)
+    match /ambulances/{ambulanceId} {
+      allow read: if isVerifiedHospital() && resource.data.hospitalId == request.auth.uid;
+      allow get: if isDriverOf(ambulanceId);
+      // The driver may see their assigned ambulance by matching driverEmail
+      allow read: if isAccount() && resource.data.get('driverEmail', '') == request.auth.token.email;
+      // The patient may see the ambulance assigned to their emergency (driver name / vehicle / phone).
+      allow get: if isAccount() && resource.data.get('currentEmergencyId', null) is string
+        && get(/databases/$(database)/documents/emergencies/$(resource.data.currentEmergencyId)).data.userId
+             == request.auth.uid;
+
+      allow create: if isVerifiedHospital()
+        && request.resource.data.hospitalId == request.auth.uid
+        && !('securityNumber' in request.resource.data)
+        && request.resource.data.isOnTrip == false;
+      allow update: if isVerifiedHospital()
+        && resource.data.hospitalId == request.auth.uid
+        && request.resource.data.hospitalId == request.auth.uid
+        && !('securityNumber' in request.resource.data);
+      // Driver: live position / online flag, and releasing the ambulance (never self-assigning).
+      allow update: if isDriverOf(ambulanceId)
+        && changedKeys().hasOnly(['latitude', 'longitude', 'bearing', 'lastUpdatedAt', 'isOnline', 'isOnTrip', 'currentEmergencyId'])
+        && (!changedKeys().hasAny(['isOnTrip', 'currentEmergencyId'])
+            || (request.resource.data.isOnTrip == false && request.resource.data.currentEmergencyId == null));
+      allow delete: if isVerifiedHospital() && resource.data.hospitalId == request.auth.uid;
+    }
+
+    // ---------------------------------------------------------------- driver login keys
+    match /ambulanceLogins/{loginKey} {
+      allow get: if signedIn();        // only by exact key (= knowing the credentials)
+      allow list: if false;            // enumeration is never allowed
+      allow create: if isVerifiedHospital()
+        && request.resource.data.hospitalId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['ambulanceId', 'hospitalId', 'createdAt'])
+        && getAfter(/databases/$(database)/documents/ambulances/$(request.resource.data.ambulanceId)).data.hospitalId
+             == request.auth.uid;
+      allow update: if false;
+      allow delete: if isVerifiedHospital() && resource.data.hospitalId == request.auth.uid;
+    }
+
+    // ---------------------------------------------------------------- driver sessions
+    match /driverSessions/{uid} {
+      allow get, delete: if signedIn() && request.auth.uid == uid;
+      allow create: if signedIn() && request.auth.uid == uid
+        && (
+          (request.resource.data.keys().hasOnly(['ambulanceId', 'loginKey', 'createdAt'])
+            && get(/databases/$(database)/documents/ambulanceLogins/$(request.resource.data.loginKey)).data.ambulanceId
+                 == request.resource.data.ambulanceId)
+          || (request.resource.data.get('ambulanceId', null) is string)
+        );
+      allow update, list: if false;
+    }
+
+    // ---------------------------------------------------------------- live driver locations
+    match /driverLocations/{ambulanceId} {
+      allow get: if isDriverOf(ambulanceId);
+      allow get: if isVerifiedHospital()
+        && get(/databases/$(database)/documents/ambulances/$(ambulanceId)).data.hospitalId == request.auth.uid;
+      // Patient: only while this location is linked to their emergency (set on driver accept).
+      allow get: if isAccount() && resource.data.get('emergencyId', null) is string
+        && get(/databases/$(database)/documents/emergencies/$(resource.data.emergencyId)).data.userId
+             == request.auth.uid;
+
+      allow create, update: if (isDriverOf(ambulanceId)
+        || (isVerifiedHospital() && get(/databases/$(database)/documents/ambulances/$(ambulanceId)).data.hospitalId == request.auth.uid))
+        && request.resource.data.ambulanceId == ambulanceId;
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------------- not used by the app
+    // emergencyContacts, notifications, emergencyHistory and anything else: denied.
+    // (Emergency contacts live in users/{uid}; history is the emergencies collection itself.)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -6,14 +6,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
  * Ambulance Selection Algorithm
  * 
  * Selects the best ambulance for an emergency based on:
- * 1. Distance (using Haversine)
- * 2. Availability status
- * 3. Valid GPS coordinates
- * 
- * Only considers ambulances that are:
- * - Active and available (isOnTrip = false or not set)
- * - Have valid GPS coordinates
- * - Belong to the same hospital or nearby hospitals
+ * 1. Availability status (isOnTrip = false)
+ * 2. Distance from emergency (using Haversine)
+ * 3. Priority to live online drivers, with fallback to hospital base location
  */
 public class AmbulanceSelection {
 
@@ -21,7 +16,8 @@ public class AmbulanceSelection {
      * Represents an ambulance with its distance from an emergency
      */
     public static class AmbulanceCandidate {
-        public String ambulanceDocId;           // Firestore document ID
+        public String ambulanceDocId;           // Firestore document ID (= ambulanceId)
+        public String hospitalId;               // Owning hospital UID
         public String hospitalName;             // Hospital name
         public String driverName;               // Driver name
         public String vehicleNumber;            // Vehicle ID
@@ -30,6 +26,7 @@ public class AmbulanceSelection {
         public double longitude;                // Current longitude
         public double distanceMeters;           // Distance from emergency in meters
         public boolean isAvailable;             // Availability status
+        public boolean isOnline;                // Driver live online status
 
         @Override
         public String toString() {
@@ -54,19 +51,11 @@ public class AmbulanceSelection {
             return false;
         }
 
-        // Check GPS coordinates
-        Double latitude = doc.getDouble("latitude");
-        Double longitude = doc.getDouble("longitude");
-        if (!HaversineDistance.isValidCoordinate(latitude, longitude)) {
-            return false;
-        }
-
         // Check availability
-        // isOnTrip = false means ambulance is available
-        // If field doesn't exist, assume available
+        // isOnTrip = true means ambulance is currently busy on a trip
         Boolean isOnTrip = doc.getBoolean("isOnTrip");
-        if (isOnTrip != null && isOnTrip) {
-            return false; // Ambulance is currently on a trip
+        if (Boolean.TRUE.equals(isOnTrip)) {
+            return false;
         }
 
         // Check that required fields exist
@@ -81,17 +70,24 @@ public class AmbulanceSelection {
     }
 
     /**
-     * Create a candidate from a Firestore ambulance document
-     * 
-     * @param doc Firestore document snapshot
-     * @param emergencyLatitude Emergency location latitude
-     * @param emergencyLongitude Emergency location longitude
-     * @return AmbulanceCandidate with calculated distance, or null if ineligible
+     * Create a candidate from a Firestore ambulance document with fallback coordinates.
      */
-    public static AmbulanceCandidate createCandidate(DocumentSnapshot doc, 
+    public static AmbulanceCandidate createCandidate(DocumentSnapshot doc,
+                                                       double defaultLatitude,
+                                                       double defaultLongitude,
                                                        double emergencyLatitude,
                                                        double emergencyLongitude) {
         if (!isEligibleAmbulance(doc)) {
+            return null;
+        }
+
+        Double lat = FirestoreValues.getDouble(doc, "latitude");
+        Double lng = FirestoreValues.getDouble(doc, "longitude");
+        if (!HaversineDistance.isValidCoordinate(lat, lng)) {
+            lat = defaultLatitude;
+            lng = defaultLongitude;
+        }
+        if (!HaversineDistance.isValidCoordinate(lat, lng)) {
             return null;
         }
 
@@ -101,9 +97,11 @@ public class AmbulanceSelection {
         candidate.driverName = doc.getString("driverName");
         candidate.vehicleNumber = doc.getString("vehicleNumber");
         candidate.driverPhone = doc.getString("driverPhone");
-        candidate.latitude = doc.getDouble("latitude");
-        candidate.longitude = doc.getDouble("longitude");
+        candidate.hospitalId = doc.getString("hospitalId");
+        candidate.latitude = lat;
+        candidate.longitude = lng;
         candidate.isAvailable = !Boolean.TRUE.equals(doc.getBoolean("isOnTrip"));
+        candidate.isOnline = Boolean.TRUE.equals(doc.getBoolean("isOnline"));
 
         // Calculate distance using Haversine
         candidate.distanceMeters = HaversineDistance.distanceInMeters(
@@ -115,10 +113,16 @@ public class AmbulanceSelection {
     }
 
     /**
+     * Create a candidate from a Firestore ambulance document
+     */
+    public static AmbulanceCandidate createCandidate(DocumentSnapshot doc, 
+                                                       double emergencyLatitude,
+                                                       double emergencyLongitude) {
+        return createCandidate(doc, 0.0, 0.0, emergencyLatitude, emergencyLongitude);
+    }
+
+    /**
      * Find the nearest available ambulance from a list of candidates
-     * 
-     * @param candidates List of AmbulanceCandidate objects
-     * @return AmbulanceCandidate with minimum distance, or null if list is empty
      */
     public static AmbulanceCandidate selectNearest(java.util.List<AmbulanceCandidate> candidates) {
         if (candidates == null || candidates.isEmpty()) {
@@ -136,10 +140,6 @@ public class AmbulanceSelection {
 
     /**
      * Filter ambulances by radius
-     * 
-     * @param candidates List of ambulance candidates
-     * @param radiusMeters Maximum distance in meters
-     * @return Filtered list of candidates within radius
      */
     public static java.util.List<AmbulanceCandidate> filterByRadius(
             java.util.List<AmbulanceCandidate> candidates, double radiusMeters) {
@@ -153,15 +153,48 @@ public class AmbulanceSelection {
     }
 
     /**
-     * Sort ambulances by distance (nearest first)
-     * 
-     * @param candidates List of ambulance candidates
-     * @return Sorted list (nearest first)
+     * Sort ambulances by distance (nearest first).
+     * Online active drivers get slight precedence if at a similar distance.
      */
     public static java.util.List<AmbulanceCandidate> sortByDistance(
             java.util.List<AmbulanceCandidate> candidates) {
         java.util.List<AmbulanceCandidate> sorted = new java.util.ArrayList<>(candidates);
-        sorted.sort((a, b) -> Double.compare(a.distanceMeters, b.distanceMeters));
+        sorted.sort((a, b) -> {
+            int cmp = Double.compare(a.distanceMeters, b.distanceMeters);
+            if (cmp != 0) return cmp;
+            return Boolean.compare(b.isOnline, a.isOnline);
+        });
         return sorted;
+    }
+
+    /**
+     * Builds candidates for one emergency from the hospital's ambulance documents and returns
+     * them nearest-first. Ambulances in excludedIds and ambulances of other hospitals are skipped.
+     */
+    public static java.util.List<AmbulanceCandidate> rankForEmergency(
+            java.util.List<DocumentSnapshot> ambulanceDocs,
+            String hospitalId,
+            double hospitalLatitude,
+            double hospitalLongitude,
+            double emergencyLatitude,
+            double emergencyLongitude,
+            java.util.Collection<String> excludedIds) {
+        java.util.List<AmbulanceCandidate> candidates = new java.util.ArrayList<>();
+        for (DocumentSnapshot doc : ambulanceDocs) {
+            if (excludedIds != null && excludedIds.contains(doc.getId())) continue;
+            if (hospitalId != null && !hospitalId.equals(doc.getString("hospitalId"))) continue;
+            AmbulanceCandidate c = createCandidate(doc, hospitalLatitude, hospitalLongitude, emergencyLatitude, emergencyLongitude);
+            if (c != null) candidates.add(c);
+        }
+        return sortByDistance(candidates);
+    }
+
+    public static java.util.List<AmbulanceCandidate> rankForEmergency(
+            java.util.List<DocumentSnapshot> ambulanceDocs,
+            String hospitalId,
+            double emergencyLatitude,
+            double emergencyLongitude,
+            java.util.Collection<String> excludedIds) {
+        return rankForEmergency(ambulanceDocs, hospitalId, 0.0, 0.0, emergencyLatitude, emergencyLongitude, excludedIds);
     }
 }

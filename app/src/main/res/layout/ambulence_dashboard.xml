@@ -6,86 +6,155 @@
     android:layout_height="match_parent"
     android:background="#F0F4F8">
 
-    <!-- Header Section -->
+    <!-- Header Section with Driver Profile and Prominent Logout -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="6dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="5dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:padding="14dp"
             android:background="@drawable/bg_card_white">
 
-            <TextView
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/bg_avatar_circle"
-                android:backgroundTint="#E3F2FD"
-                android:gravity="center"
-                android:text="🚑"
-                android:textSize="26sp" />
-
+            <!-- Top Row: Avatar, Info, and Prominent Logout Button -->
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
                 <TextView
-                    android:id="@+id/tvDriverName"
-                    android:layout_width="wrap_content"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:backgroundTint="#E3F2FD"
+                    android:gravity="center"
+                    android:text="🚑"
+                    android:textSize="22sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Jay (Driver)"
-                    android:textColor="#1A237E"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvDriverName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Driver"
+                        android:textColor="#1A237E"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvAmbulanceId"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ID: --"
+                        android:textColor="#546E7A"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Dedicated, prominent Logout Button -->
+                <Button
+                    android:id="@+id/btnDriverLogout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="LOGOUT ⏻"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:backgroundTint="#D32F2F"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    app:cornerRadius="18dp" />
+            </LinearLayout>
+
+            <!-- Bottom Row: Duty Status Switch -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp"
+                android:paddingTop="6dp">
 
                 <TextView
-                    android:id="@+id/tvAmbulanceId"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="ID: --"
+                    android:layout_weight="1"
+                    android:text="DUTY STATUS:"
                     android:textColor="#546E7A"
                     android:textSize="12sp"
                     android:textStyle="bold" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/statusSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/status_available"
+                    android:textColor="@color/green_safe"
+                    android:textStyle="bold"
+                    app:thumbTint="@color/green_safe"
+                    app:trackTint="#CFD8DC" />
             </LinearLayout>
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/statusSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/status_available"
-                android:textColor="@color/green_safe"
-                android:textStyle="bold"
-                app:thumbTint="@color/green_safe"
-                app:trackTint="#CFD8DC" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Map Section -->
+    <!-- Map Section (Allocated solid height so driver can always see live route navigation) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/mapCard"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="20dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        app:cardCornerRadius="18dp"
         app:cardElevation="4dp"
+        app:layout_constraintHeight_min="230dp"
+        app:layout_constraintTop_toBottomOf="@id/headerCard"
         app:layout_constraintBottom_toTopOf="@+id/taskCard"
-        app:layout_constraintTop_toBottomOf="@id/headerCard">
+        app:layout_constraintVertical_weight="1">
 
-        <com.mapbox.maps.MapView
-            android:id="@+id/map"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent">
+
+            <com.mapbox.maps.MapView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Floating Recenter Button on Map -->
+            <Button
+                android:id="@+id/btnRecenterAmbulanceMap"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="10dp"
+                android:text="📍 Recenter"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#1E88E5"
+                android:backgroundTint="#FFFFFF"
+                app:cornerRadius="18dp"
+                android:elevation="4dp" />
+
+        </FrameLayout>
     </androidx.cardview.widget.CardView>
 
     <!-- Active Task Card -->
@@ -93,202 +162,278 @@
         android:id="@+id/taskCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="10dp"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="22dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_badge_safe"
-                android:backgroundTint="#FFEBEE"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp"
-                android:text="ACTIVE EMERGENCY"
-                android:textColor="#D32F2F"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvPatientName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:text="No Active Patient"
-                android:textColor="#1A237E"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvEmergencyType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="System Standby"
-                android:textColor="#D32F2F"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvAddress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:drawablePadding="10dp"
-                android:text="Standby for incoming requests"
-                android:textColor="#546E7A"
-                android:textSize="14sp"
-                app:drawableStartCompat="@android:drawable/ic_menu_directions" />
-
-            <!-- Collapsible Medical Info -->
-            <TextView
-                android:id="@+id/btnToggleVitals"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:background="#F5F7F9"
-                android:padding="10dp"
-                android:text="View Patient Vitals"
-                android:textColor="#1E88E5"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:gravity="center_vertical"
-                app:drawableEndCompat="@android:drawable/arrow_down_float"
-                android:drawablePadding="6dp" />
+            android:fillViewport="true"
+            android:overScrollMode="never">
 
             <LinearLayout
-                android:id="@+id/medicalInfoSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="12dp"
-                android:visibility="gone">
+                android:padding="16dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="BLOOD GROUP"
-                            android:textColor="#90A4AE"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:id="@+id/tvPatientBlood"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="--"
-                            android:textColor="#1A237E"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                        android:background="@drawable/bg_badge_safe"
+                        android:backgroundTint="#FFEBEE"
+                        android:paddingStart="10dp"
+                        android:paddingEnd="10dp"
+                        android:paddingTop="3dp"
+                        android:paddingBottom="3dp"
+                        android:text="ACTIVE EMERGENCY"
+                        android:textColor="#D32F2F"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
 
-                    <LinearLayout
+                    <View
                         android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <TextView
+                        android:id="@+id/tvEmergencyType"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="ALLERGIES"
-                            android:textColor="#90A4AE"
-                            android:textSize="10sp"
-                            android:textStyle="bold" />
-                        <TextView
-                            android:id="@+id/tvPatientAllergies"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="--"
-                            android:textColor="#D32F2F"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                        android:text="System Standby"
+                        android:textColor="#D32F2F"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tvPatientName"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="No Active Patient"
+                    android:textColor="#1A237E"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:drawablePadding="8dp"
+                    android:text="Standby for incoming requests"
+                    android:textColor="#546E7A"
+                    android:textSize="13sp"
+                    app:drawableStartCompat="@android:drawable/ic_menu_directions" />
+
+                <TextView
+                    android:id="@+id/tvJobStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Status: --"
+                    android:textColor="#0D3B66"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvRouteInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text=""
+                    android:textColor="#1E88E5"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- Collapsible Medical Info -->
+                <TextView
+                    android:id="@+id/btnToggleVitals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="#F5F7F9"
+                    android:padding="8dp"
+                    android:text="View Patient Vitals"
+                    android:textColor="#1E88E5"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:gravity="center_vertical"
+                    app:drawableEndCompat="@android:drawable/arrow_down_float"
+                    android:drawablePadding="6dp" />
+
+                <LinearLayout
+                    android:id="@+id/medicalInfoSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BLOOD GROUP"
+                                android:textColor="#90A4AE"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvPatientBlood"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textColor="#1A237E"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ALLERGIES"
+                                android:textColor="#90A4AE"
+                                android:textSize="10sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvPatientAllergies"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="--"
+                                android:textColor="#D32F2F"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="PATIENT PHONE"
+                        android:textColor="#90A4AE"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvPatientPhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textColor="#1A237E"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="EMERGENCY CONTACT"
+                        android:textColor="#90A4AE"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+                    <TextView
+                        android:id="@+id/tvEmergencyContact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="--"
+                        android:textColor="#1A237E"
+                        android:textSize="13sp" />
+                </LinearLayout>
+
+                <!-- Decision Row for Driver: Accept / Reject -->
+                <LinearLayout
+                    android:id="@+id/jobDecisionRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/btnAcceptJob"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="#2E7D32"
+                        android:text="ACCEPT"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+
+                    <Button
+                        android:id="@+id/btnRejectJob"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#E53935"
+                        android:text="REJECT"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
+
+                <!-- Navigation & Action Buttons Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="PATIENT PHONE"
-                    android:textColor="#90A4AE"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:id="@+id/tvPatientPhone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#1A237E"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="EMERGENCY CONTACT"
-                    android:textColor="#90A4AE"
-                    android:textSize="10sp"
-                    android:textStyle="bold" />
-                <TextView
-                    android:id="@+id/tvEmergencyContact"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="--"
-                    android:textColor="#1A237E"
-                    android:textSize="14sp" />
+                    <Button
+                        android:id="@+id/btnNavigate"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:backgroundTint="#1E88E5"
+                        android:text="🧭 NAVIGATE"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        android:elevation="3dp" />
+
+                    <Button
+                        android:id="@+id/btnArrived"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#2E7D32"
+                        android:text="ARRIVED"
+                        android:textColor="#FFFFFF"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        android:elevation="3dp" />
+                </LinearLayout>
             </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnNavigate"
-                    android:layout_width="0dp"
-                    android:layout_height="58dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="10dp"
-                    android:backgroundTint="#1E88E5"
-                    android:text="NAVIGATE"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    app:cornerRadius="14dp"
-                    android:elevation="4dp" />
-
-                <Button
-                    android:id="@+id/btnArrived"
-                    android:layout_width="0dp"
-                    android:layout_height="58dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:backgroundTint="#2E7D32"
-                    android:text="ARRIVED"
-                    android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    app:cornerRadius="14dp"
-                    android:elevation="4dp" />
-            </LinearLayout>
-        </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

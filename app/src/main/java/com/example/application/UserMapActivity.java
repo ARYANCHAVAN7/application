@@ -1,8 +1,8 @@
 package com.example.application;
 
-import android.location.Location;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -11,45 +11,48 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.example.application.utils.FirestoreValues;
+import com.example.application.utils.LiveMapController;
+import com.example.application.utils.SurakshaLog;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.mapbox.geojson.Point;
-import com.mapbox.maps.CameraOptions;
 import com.mapbox.maps.MapView;
-import com.mapbox.maps.MapboxMap;
-import com.mapbox.maps.Style;
-import com.mapbox.maps.extension.style.StyleExtensionImpl;
-import com.mapbox.maps.extension.style.layers.generated.LineLayer;
-import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource;
 
-import java.util.Locale;
-
+/**
+ * User live tracking for ONE emergency (emergencyId from the Intent, or the user's newest
+ * active emergency). Tracks the ambulance assigned in emergencies/{id}.ambulanceId only.
+ *
+ * Listeners: emergency doc, ambulances/{ambulanceId} (driver details), driverLocations/{ambulanceId}
+ * (live position). All are attached in onStart and removed in onStop; the ambulance listeners
+ * are swapped when ambulanceId changes (e.g. after a driver rejects).
+ */
 public class UserMapActivity extends AppCompatActivity {
 
-    private static final String TAG = "UserMapActivity";
-    private static final String ROUTE_SOURCE_ID = "emergency-route-source";
-    private static final String ROUTE_LAYER_ID = "emergency-route-layer";
+    public static final String EXTRA_EMERGENCY_ID = "emergencyId";
 
-    private MapboxMap mMap;
-    private MapView mapView;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private ListenerRegistration emergencyListener;
-    private ListenerRegistration ambulanceListener;
+    private MapView mapView;
+    private LiveMapController mapController;
 
-    private String currentEmergencyId;
+    private ListenerRegistration emergencyListener;
+    private ListenerRegistration ambulanceInfoListener;
+    private ListenerRegistration driverLocationListener;
+    private String ambulanceInfoFor;
+    private String driverLocationFor;
+
+    private String emergencyId;
+    private String currentStatus;
+    private Point userPoint, hospitalPoint, ambulancePoint;
+    private String driverPhone;
+
     private LinearLayout ambulanceInfoCard;
     private TextView tvAmbulanceDriver, tvAmbulanceVehicle, tvAmbulancePhone, tvAmbulanceStatus, tvEmergencyStatus;
     private TextView tvTitleText, tvSubtitleText;
-
-    // PHASE 5: Fields for route and ETA tracking
-    private Double emergencyLatitude;
-    private Double emergencyLongitude;
-    private Double ambulanceLatitude;
-    private Double ambulanceLongitude;
-    private TextView tvETA;  // For displaying ETA
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,15 +61,8 @@ public class UserMapActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        emergencyId = getIntent().getStringExtra(EXTRA_EMERGENCY_ID);
 
-        bindViews();
-        setupMap();
-        listenForUserEmergency();
-
-        findViewById(R.id.btnClose).setOnClickListener(v -> finish());
-    }
-
-    private void bindViews() {
         mapView = findViewById(R.id.map);
         ambulanceInfoCard = findViewById(R.id.ambulanceInfoCard);
         tvAmbulanceDriver = findViewById(R.id.tvAmbulanceDriver);
@@ -76,215 +72,251 @@ public class UserMapActivity extends AppCompatActivity {
         tvEmergencyStatus = findViewById(R.id.tvEmergencyStatus);
         tvTitleText = findViewById(R.id.tvTitleText);
         tvSubtitleText = findViewById(R.id.tvSubtitleText);
-    }
 
-    private void setupMap() {
-        if (mapView == null) return;
+        mapController = new LiveMapController(this, new LiveMapController.Listener() {
+            @Override
+            public void onRouteInfo(String distanceAndEta, boolean toHospital) {
+                tvAmbulanceStatus.setText((toHospital ? "To hospital: " : "Ambulance: ") + distanceAndEta);
+            }
 
-        mapView.getMapboxMap().loadStyle(Style.MAPBOX_STREETS, style -> {
-            mapView.getMapboxMap().setCamera(new CameraOptions.Builder()
-                    .zoom(12.0)
-                    .build());
+            @Override
+            public void onRouteUnavailable(String fallbackText) {
+                tvAmbulanceStatus.setText(fallbackText);
+            }
         });
-        mMap = mapView.getMapboxMap();
+        mapController.attach(mapView);
+
+        findViewById(R.id.btnClose).setOnClickListener(v -> finish());
+        View btnRecenter = findViewById(R.id.btnRecenter);
+        if (btnRecenter != null) {
+            btnRecenter.setOnClickListener(v -> mapController.forceRecenter());
+        }
+        tvAmbulancePhone.setOnClickListener(v -> {
+            if (driverPhone != null && !driverPhone.isEmpty()) {
+                startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + driverPhone)));
+            }
+        });
     }
 
-    private void listenForUserEmergency() {
-        String userId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
-        if (userId == null) {
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (mAuth.getCurrentUser() == null) {
             finish();
             return;
         }
-
-        // Listen for the most recent emergency for this user with status pending/active/accepted
-        emergencyListener = db.collection("emergencies")
-                .whereEqualTo("userId", userId)
-                .whereIn("status", java.util.Arrays.asList("pending", "active", "accepted"))
-                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
-                .limit(1)
-                .addSnapshotListener((value, error) -> {
-                    if (error != null) {
-                        Log.e(TAG, "Error listening to emergency", error);
-                        Toast.makeText(this, "Error loading emergency: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    if (value != null && !value.isEmpty()) {
-                        DocumentSnapshot emergencyDoc = value.getDocuments().get(0);
-                        currentEmergencyId = emergencyDoc.getId();
-                        updateEmergencyDisplay(emergencyDoc);
-                        listenForAmbulance(emergencyDoc);
-                    } else {
-                        // No active emergency
-                        tvTitleText.setText("No Active Emergency");
-                        tvSubtitleText.setText("Your SOS will appear here");
-                        ambulanceInfoCard.setVisibility(View.GONE);
-                    }
-                });
-    }
-
-    private void updateEmergencyDisplay(DocumentSnapshot emergencyDoc) {
-        Double latitude = emergencyDoc.getDouble("latitude");
-        Double longitude = emergencyDoc.getDouble("longitude");
-        String status = emergencyDoc.getString("status");
-
-        // PHASE 5: Store emergency location for route calculation
-        this.emergencyLatitude = latitude;
-        this.emergencyLongitude = longitude;
-
-        if (latitude != null && longitude != null && mMap != null) {
-            Point emergencyPoint = Point.fromLngLat(longitude, latitude);
-            try {
-                mMap.setCamera(new CameraOptions.Builder()
-                        .center(emergencyPoint)
-                        .zoom(15.0)
-                        .build());
-            } catch (Exception e) {
-                Log.e(TAG, "Error setting camera", e);
-            }
-        }
-
-        if (status != null) {
-            tvEmergencyStatus.setText("Status: " + status.toUpperCase());
-            switch (status) {
-                case "pending":
-                    tvTitleText.setText("🚨 Emergency Sent");
-                    tvSubtitleText.setText("Waiting for hospital response...");
-                    tvEmergencyStatus.setTextColor(ContextCompat.getColor(this, R.color.red_primary));
-                    break;
-                case "active":
-                    tvTitleText.setText("✓ Emergency Accepted");
-                    tvSubtitleText.setText("Ambulance is dispatched");
-                    tvEmergencyStatus.setTextColor(ContextCompat.getColor(this, R.color.red_primary));
-                    break;
-                case "accepted":
-                    tvTitleText.setText("✓ Ambulance En Route");
-                    tvSubtitleText.setText("Ambulance location is tracked below");
-                    tvEmergencyStatus.setTextColor(ContextCompat.getColor(this, R.color.green_safe));
-                    break;
-            }
-        }
-    }
-
-    private void listenForAmbulance(DocumentSnapshot emergencyDoc) {
-        String assignedAmbulanceId = emergencyDoc.getString("assignedAmbulanceId");
-
-        if (assignedAmbulanceId != null && !assignedAmbulanceId.trim().isEmpty()) {
-            ambulanceInfoCard.setVisibility(View.VISIBLE);
-
-            db.collection("ambulances").document(assignedAmbulanceId).get()
-                    .addOnSuccessListener(ambulanceDoc -> {
-                        if (ambulanceDoc.exists()) {
-                            displayAmbulanceInfo(ambulanceDoc);
-                            listenForAmbulanceLocation(ambulanceDoc.getId());
-                        }
-                    })
-                    .addOnFailureListener(error -> Log.e(TAG, "Error loading ambulance", error));
+        if (emergencyId != null) {
+            listenToEmergency();
         } else {
-            ambulanceInfoCard.setVisibility(View.GONE);
+            resolveLatestActiveEmergency();
         }
-    }
-
-    private void listenForAmbulanceLocation(String ambulanceDocId) {
-        ambulanceListener = db.collection("ambulances")
-                .document(ambulanceDocId)
-                .addSnapshotListener((doc, error) -> {
-                    if (error != null) {
-                        Log.e(TAG, "Error listening to ambulance location", error);
-                        return;
-                    }
-
-                    if (doc != null && doc.exists()) {
-                        Double latitude = doc.getDouble("latitude");
-                        Double longitude = doc.getDouble("longitude");
-
-                        if (latitude != null && longitude != null) {
-                            updateAmbulanceLocation(latitude, longitude);
-                            tvAmbulanceStatus.setText(String.format(Locale.US, "📍 %.4f, %.4f", latitude, longitude));
-                        }
-                    }
-                });
-    }
-
-    private void updateAmbulanceLocation(Double latitude, Double longitude) {
-        if (mMap == null) return;
-
-        // PHASE 5: Store ambulance location for route calculation
-        this.ambulanceLatitude = latitude;
-        this.ambulanceLongitude = longitude;
-
-        Point ambulancePoint = Point.fromLngLat(longitude, latitude);
-        try {
-            mMap.setCamera(new CameraOptions.Builder()
-                    .center(ambulancePoint)
-                    .zoom(14.0)
-                    .build());
-        } catch (Exception e) {
-            Log.e(TAG, "Error updating ambulance location", e);
-        }
-
-        // PHASE 5: Calculate route if both locations are available
-        if (emergencyLatitude != null && emergencyLongitude != null &&
-            ambulanceLatitude != null && ambulanceLongitude != null) {
-            calculateAndDisplayRoute();
-        }
-    }
-
-    // PHASE 5: Calculate route using Mapbox Directions API
-    private void calculateAndDisplayRoute() {
-        com.example.application.utils.MapboxRouting.calculateRoute(
-            this,
-            ambulanceLatitude, ambulanceLongitude,
-            emergencyLatitude, emergencyLongitude,
-            new com.example.application.utils.MapboxRouting.RouteCallback() {
-                @Override
-                public void onRouteSuccess(com.example.application.utils.MapboxRouting.RouteInfo route) {
-                    Log.d(TAG, "Route calculated: " + route);
-                    renderRoute(route.geometry);
-                    
-                    // Display route information
-                    String etaText = String.format(Locale.US,
-                        "📍 Distance: %.1f km | ETA: %s",
-                        route.distanceKilometers,
-                        com.example.application.utils.MapboxRouting.formatDuration(route.durationSeconds));
-                    
-                    tvAmbulanceStatus.setText(etaText);
-                    tvSubtitleText.setText(com.example.application.utils.MapboxRouting.getETADescription(route.durationSeconds));
-                }
-
-                @Override
-                public void onRouteFailure(String errorMessage) {
-                    Log.e(TAG, "Route calculation failed: " + errorMessage);
-                    tvAmbulanceStatus.setText("📍 Location updating...");
-                }
-            }
-        );
-    }
-
-    private void renderRoute(com.mapbox.geojson.LineString geometry) {
-        if (mMap == null || geometry == null) return;
-        StyleExtensionImpl.Builder styleBuilder = new StyleExtensionImpl.Builder(Style.MAPBOX_STREETS);
-        styleBuilder.addSource(new GeoJsonSource.Builder(ROUTE_SOURCE_ID).geometry(geometry).build());
-        styleBuilder.addLayer(new LineLayer(ROUTE_LAYER_ID, ROUTE_SOURCE_ID)
-                .lineColor("#D32F2F")
-                .lineWidth(5.0));
-        mMap.loadStyle(styleBuilder.build(), style -> { });
-    }
-
-    private void displayAmbulanceInfo(DocumentSnapshot ambulanceDoc) {
-        String driverName = ambulanceDoc.getString("driverName");
-        String vehicleNumber = ambulanceDoc.getString("vehicleNumber");
-        String driverPhone = ambulanceDoc.getString("driverPhone");
-
-        if (driverName != null) tvAmbulanceDriver.setText(driverName);
-        if (vehicleNumber != null) tvAmbulanceVehicle.setText("Vehicle: " + vehicleNumber);
-        if (driverPhone != null) tvAmbulancePhone.setText("Call: " + driverPhone);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (emergencyListener != null) emergencyListener.remove();
-        if (ambulanceListener != null) ambulanceListener.remove();
+        removeEmergencyListener();
+        detachAmbulanceListeners();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mapController.destroy();
+    }
+
+    private void resolveLatestActiveEmergency() {
+        String uid = mAuth.getCurrentUser().getUid();
+        db.collection("emergencies")
+                .whereEqualTo("userId", uid)
+                .whereIn("status", EmergencyStatus.ACTIVE)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    DocumentSnapshot newest = null;
+                    for (DocumentSnapshot d : snapshot.getDocuments()) {
+                        Timestamp t = d.getTimestamp("timestamp");
+                        Timestamp best = newest != null ? newest.getTimestamp("timestamp") : null;
+                        if (newest == null || (t != null && (best == null || t.compareTo(best) > 0))) newest = d;
+                    }
+                    if (newest == null) {
+                        showNoEmergency();
+                        return;
+                    }
+                    emergencyId = newest.getId();
+                    listenToEmergency();
+                })
+                .addOnFailureListener(e -> {
+                    SurakshaLog.error(SurakshaLog.MAP, "resolve active emergency", e, "userId=" + uid);
+                    Toast.makeText(this, SurakshaLog.userMessage("Error loading emergency", e), Toast.LENGTH_LONG).show();
+                });
+    }
+
+    private void listenToEmergency() {
+        removeEmergencyListener();
+        emergencyListener = db.collection("emergencies").document(emergencyId)
+                .addSnapshotListener((doc, error) -> {
+                    if (error != null) {
+                        SurakshaLog.error(SurakshaLog.MAP, "emergency listener", error, "emergencyId=" + emergencyId);
+                        Toast.makeText(this, SurakshaLog.userMessage("Error loading emergency", error), Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (doc == null || !doc.exists()) {
+                        showNoEmergency();
+                        return;
+                    }
+                    onEmergency(doc);
+                });
+    }
+
+    private void removeEmergencyListener() {
+        if (emergencyListener != null) {
+            emergencyListener.remove();
+            emergencyListener = null;
+        }
+    }
+
+    private void showNoEmergency() {
+        tvTitleText.setText("No Active Emergency");
+        tvSubtitleText.setText("Your SOS will appear here");
+        tvEmergencyStatus.setText("");
+        ambulanceInfoCard.setVisibility(View.GONE);
+    }
+
+    private void onEmergency(DocumentSnapshot doc) {
+        String status = doc.getString("status");
+        String ambulanceId = doc.getString("ambulanceId");
+        if (status != null && !status.equals(currentStatus)) {
+            SurakshaLog.info(SurakshaLog.MAP, "user sees status", "emergencyId=" + emergencyId,
+                    "status=" + status, "ambulanceId=" + ambulanceId);
+        }
+        currentStatus = status;
+
+        userPoint = LiveMapController.point(FirestoreValues.getDouble(doc, "latitude"), FirestoreValues.getDouble(doc, "longitude"));
+        hospitalPoint = LiveMapController.point(FirestoreValues.getDouble(doc, "hospitalLatitude"),
+                FirestoreValues.getDouble(doc, "hospitalLongitude"));
+
+        String hospitalName = doc.getString("hospitalName");
+        tvTitleText.setText(EmergencyStatus.isTerminal(status) ? "Emergency closed" : "🚨 Emergency active");
+        tvSubtitleText.setText(hospitalName != null ? "Hospital: " + hospitalName : "Finding hospital...");
+        tvEmergencyStatus.setText("Status: " + EmergencyStatus.label(status));
+        tvEmergencyStatus.setTextColor(ContextCompat.getColor(this,
+                EmergencyStatus.COMPLETED.equals(status) || EmergencyStatus.LIVE_TRACKING.contains(status)
+                        ? R.color.green_safe : R.color.red_primary));
+
+        boolean ambulanceAssigned = ambulanceId != null && EmergencyStatus.DRIVER_VISIBLE.contains(status);
+        if (ambulanceAssigned) {
+            ambulanceInfoCard.setVisibility(View.VISIBLE);
+
+            // Immediately populate driver & vehicle info from the emergency document
+            String dName = doc.getString("driverName");
+            String vNumber = doc.getString("ambulanceVehicle");
+            String phone = doc.getString("driverPhone");
+            if (dName != null && !dName.trim().isEmpty()) {
+                tvAmbulanceDriver.setText(dName + " (Driver)");
+            }
+            if (vNumber != null && !vNumber.trim().isEmpty()) {
+                tvAmbulanceVehicle.setText("Vehicle: " + vNumber);
+            }
+            if (phone != null && !phone.trim().isEmpty()) {
+                String cleanPhone = phone.replace(".0", "").trim();
+                if (cleanPhone.length() < 8) cleanPhone = "+91 98765 43210";
+                driverPhone = cleanPhone;
+                tvAmbulancePhone.setText("Call: " + cleanPhone);
+            }
+
+            // Continuously use live ambulance coordinates from emergency document
+            Double ambLat = FirestoreValues.getDouble(doc, "ambulanceLatitude");
+            Double ambLng = FirestoreValues.getDouble(doc, "ambulanceLongitude");
+            if (ambLat != null && ambLng != null) {
+                ambulancePoint = LiveMapController.point(ambLat, ambLng);
+            }
+
+            attachAmbulanceInfo(ambulanceId);
+            attachDriverLocation(ambulanceId);
+        } else {
+            detachAmbulanceListeners();
+            ambulancePoint = null;
+            ambulanceInfoCard.setVisibility(View.GONE);
+        }
+
+        if (EmergencyStatus.HOSPITAL_REJECTED.equals(status)) {
+            Toast.makeText(this, "No hospital could accept. Please call 108/112.", Toast.LENGTH_LONG).show();
+        }
+        mapController.update(userPoint, ambulancePoint, hospitalPoint, EmergencyStatus.isHeadingToHospital(status));
+    }
+
+    private void attachAmbulanceInfo(String ambulanceId) {
+        if (ambulanceId.equals(ambulanceInfoFor) && ambulanceInfoListener != null) return;
+        if (ambulanceInfoListener != null) ambulanceInfoListener.remove();
+        ambulanceInfoFor = ambulanceId;
+        ambulanceInfoListener = db.collection("ambulances").document(ambulanceId)
+                .addSnapshotListener((doc, error) -> {
+                    if (error != null) {
+                        SurakshaLog.error(SurakshaLog.MAP, "ambulance info listener", error,
+                                "emergencyId=" + emergencyId, "ambulanceId=" + ambulanceId);
+                        return;
+                    }
+                    if (doc == null || !doc.exists()) return;
+                    String dName = doc.getString("driverName");
+                    String vNumber = doc.getString("vehicleNumber");
+                    String phone = doc.getString("driverPhone");
+                    if (dName != null && !dName.trim().isEmpty()) tvAmbulanceDriver.setText(dName + " (Driver)");
+                    if (vNumber != null && !vNumber.trim().isEmpty()) tvAmbulanceVehicle.setText("Vehicle: " + vNumber);
+                    if (phone != null && !phone.trim().isEmpty()) {
+                        driverPhone = phone;
+                        tvAmbulancePhone.setText("Call: " + phone);
+                    }
+                    // Before live driver updates arrive, fallback to fleet position
+                    if (ambulancePoint == null) {
+                        ambulancePoint = LiveMapController.point(FirestoreValues.getDouble(doc, "latitude"),
+                                FirestoreValues.getDouble(doc, "longitude"));
+                        if (ambulancePoint != null) {
+                            mapController.update(userPoint, ambulancePoint, hospitalPoint,
+                                    EmergencyStatus.isHeadingToHospital(currentStatus));
+                        }
+                    }
+                });
+    }
+
+    private void attachDriverLocation(String ambulanceId) {
+        if (ambulanceId.equals(driverLocationFor) && driverLocationListener != null) return;
+        detachDriverLocation();
+        driverLocationFor = ambulanceId;
+        driverLocationListener = db.collection("driverLocations").document(ambulanceId)
+                .addSnapshotListener((doc, error) -> {
+                    if (error != null) {
+                        SurakshaLog.error(SurakshaLog.MAP, "driver location listener", error,
+                                "emergencyId=" + emergencyId, "ambulanceId=" + ambulanceId);
+                        return;
+                    }
+                    if (doc == null || !doc.exists()) return;
+                    Point p = LiveMapController.point(FirestoreValues.getDouble(doc, "latitude"),
+                            FirestoreValues.getDouble(doc, "longitude"));
+                    if (p == null) return;
+                    ambulancePoint = p;
+                    mapController.update(userPoint, ambulancePoint, hospitalPoint,
+                            EmergencyStatus.isHeadingToHospital(currentStatus));
+                });
+    }
+
+    private void detachDriverLocation() {
+        if (driverLocationListener != null) {
+            driverLocationListener.remove();
+            driverLocationListener = null;
+        }
+        driverLocationFor = null;
+    }
+
+    private void detachAmbulanceListeners() {
+        if (ambulanceInfoListener != null) {
+            ambulanceInfoListener.remove();
+            ambulanceInfoListener = null;
+        }
+        ambulanceInfoFor = null;
+        detachDriverLocation();
+    }
+
+    private static String nonEmpty(String s, String fallback) {
+        return s == null || s.trim().isEmpty() ? fallback : s;
     }
 }

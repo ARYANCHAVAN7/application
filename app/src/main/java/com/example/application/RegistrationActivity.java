@@ -10,20 +10,26 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.application.utils.SurakshaLog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class RegistrationActivity extends AppCompatActivity {
 
+    static final String MSG_EMAIL_EXISTS = "Email already registered. Please login or use another email.";
+
     private EditText inputFullName, inputEmail, inputPhone, inputPassword,
             inputConfirmPassword, inputBloodGroup, inputEmergencyName, inputEmergencyPhone;
+    private TextView btnRegister;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private boolean submitting = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +41,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
         bindViews();
 
-        TextView btnRegister = findViewById(R.id.btnRegister);
+        btnRegister = findViewById(R.id.btnRegister);
         TextView goToLogin = findViewById(R.id.goToLogin);
 
         btnRegister.setOnClickListener(v -> handleRegister());
@@ -57,7 +63,15 @@ public class RegistrationActivity extends AppCompatActivity {
         inputEmergencyPhone = findViewById(R.id.inputEmergencyPhone);
     }
 
+    private void setSubmitting(boolean value) {
+        submitting = value;
+        btnRegister.setEnabled(!value);
+        btnRegister.setAlpha(value ? 0.5f : 1f);
+    }
+
     private void handleRegister() {
+        if (submitting) return;
+
         String fullName = inputFullName.getText().toString().trim();
         String email = inputEmail.getText().toString().trim();
         String phone = inputPhone.getText().toString().trim();
@@ -88,40 +102,47 @@ public class RegistrationActivity extends AppCompatActivity {
             return;
         }
 
+        setSubmitting(true);
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        String userId = mAuth.getCurrentUser().getUid();
-                        saveUserToFirestore(userId, fullName, email, phone, bloodGroup, emergencyName, emergencyPhone);
+                    if (task.isSuccessful() && mAuth.getCurrentUser() != null) {
+                        saveUserToFirestore(mAuth.getCurrentUser(), fullName, email, phone,
+                                bloodGroup, emergencyName, emergencyPhone);
+                        return;
+                    }
+                    setSubmitting(false);
+                    Exception e = task.getException();
+                    if (e instanceof FirebaseAuthUserCollisionException) {
+                        // Never sign in and overwrite an existing account's profile/role.
+                        SurakshaLog.info(SurakshaLog.AUTH, "user registration blocked: email exists");
+                        Toast.makeText(this, MSG_EMAIL_EXISTS, Toast.LENGTH_LONG).show();
                     } else {
-                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            Toast.makeText(this, "Email already registered. Please log in with this email.", Toast.LENGTH_LONG).show();
-                            Intent intent = new Intent(this, UserLoginActivity.class);
-                            intent.putExtra("prefill_email", email);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
-                            Toast.makeText(RegistrationActivity.this, "Registration failed: " + error, Toast.LENGTH_LONG).show();
-                        }
+                        SurakshaLog.error(SurakshaLog.AUTH, "createUserWithEmailAndPassword(user)", e);
+                        Toast.makeText(this, "Registration failed: "
+                                + (e != null ? e.getMessage() : "Unknown error"), Toast.LENGTH_LONG).show();
                     }
                 });
     }
 
-    private void saveUserToFirestore(String userId, String name, String email, String phone,
+    private void saveUserToFirestore(FirebaseUser firebaseUser, String name, String email, String phone,
                                      String blood, String eName, String ePhone) {
+        String userId = firebaseUser.getUid();
         Map<String, Object> user = new HashMap<>();
-        user.put("fullName", name);
+        user.put("uid", userId);
+        user.put("name", name);
+        user.put("fullName", name); // existing readers use fullName
         user.put("email", email);
         user.put("phone", phone);
         user.put("bloodGroup", blood);
         user.put("emergencyName", eName);
         user.put("emergencyPhone", ePhone);
         user.put("role", "user");
+        user.put("createdAt", FieldValue.serverTimestamp());
 
         db.collection("users").document(userId)
                 .set(user)
                 .addOnSuccessListener(aVoid -> {
+                    SurakshaLog.info(SurakshaLog.AUTH, "user profile created", "uid=" + userId);
                     Toast.makeText(RegistrationActivity.this, "Registration Successful!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(RegistrationActivity.this, DashboardActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -129,11 +150,18 @@ public class RegistrationActivity extends AppCompatActivity {
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    String error = e instanceof FirebaseFirestoreException
-                            && ((FirebaseFirestoreException) e).getCode() == FirebaseFirestoreException.Code.PERMISSION_DENIED
-                            ? "Permission denied by Firestore rules. Ask the Firebase project owner to allow users to create their own profile."
-                            : (e.getMessage() != null ? e.getMessage() : "Unknown Firestore error");
-                    Toast.makeText(RegistrationActivity.this, "Data save failed: " + error, Toast.LENGTH_LONG).show();
+                    SurakshaLog.error(SurakshaLog.AUTH, "create users/{uid} (user)", e, "uid=" + userId);
+                    // Roll back the Auth account so the email can be registered again cleanly.
+                    firebaseUser.delete().addOnCompleteListener(t -> {
+                        if (!t.isSuccessful()) {
+                            SurakshaLog.error(SurakshaLog.AUTH, "rollback auth user", t.getException(), "uid=" + userId);
+                        }
+                        mAuth.signOut();
+                    });
+                    setSubmitting(false);
+                    Toast.makeText(RegistrationActivity.this,
+                            SurakshaLog.userMessage("Could not save your profile. Please try again", e),
+                            Toast.LENGTH_LONG).show();
                 });
     }
 }

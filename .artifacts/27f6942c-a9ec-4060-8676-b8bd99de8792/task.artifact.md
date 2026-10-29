@@ -1,4 +1,0 @@
-- [ ] Implement Firebase Registration in `RegistrationActivity.java`
-- [ ] Implement Firebase Login in `UserLoginActivity.java`
-- [ ] Add logic to save user details to Firestore in `RegistrationActivity.java`
-- [ ] Verify the build

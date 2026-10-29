@@ -1,0 +1,26 @@
+# ============================================================================
+# SURAKSHA - local configuration template
+# ============================================================================
+# Copy this file to local.properties and fill in your real values:
+#
+#     cp local.properties.example local.properties
+#
+# local.properties is git-ignored. NEVER commit real API keys.
+# ============================================================================
+
+# Android SDK location (Android Studio normally writes this automatically).
+sdk.dir=/path/to/Android/Sdk
+
+# Mapbox public access token (starts with "pk.")
+# Get it from: https://account.mapbox.com/access-tokens/
+MAPBOX_ACCESS_TOKEN=pk.your_mapbox_public_token_here
+
+# Groq API key (starts with "gsk_")
+# Get it from: https://console.groq.com/keys
+GROQ_API_KEY=gsk_your_groq_api_key_here
+
+# Google OAuth Web Client ID used by Google Sign-In
+# Get it from: Firebase Console > Authentication > Sign-in method > Google
+#              > Web SDK configuration > Web client ID
+# (or Google Cloud Console > APIs & Services > Credentials)
+GOOGLE_WEB_CLIENT_ID=your-web-client-id.apps.googleusercontent.com

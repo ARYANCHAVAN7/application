@@ -387,6 +387,63 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="18dp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:text="Hospital latitude / longitude"
+                android:textColor="#8CA6C2"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/etHospitalLatitude"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:autofillHints="none"
+                    android:background="@drawable/bg_input_light"
+                    android:hint="Latitude"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textColor="#0D3B66" />
+
+                <EditText
+                    android:id="@+id/etHospitalLongitude"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:autofillHints="none"
+                    android:background="@drawable/bg_input_light"
+                    android:hint="Longitude"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="14dp"
+                    android:textColor="#0D3B66" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnUseHospitalLocation"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:maxWidth="488dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="14dp"
+                android:text="Use my current location"
+                android:textAllCaps="false" />
+
             <Button
                 android:id="@+id/btnUpdateResources"
                 android:layout_width="match_parent"

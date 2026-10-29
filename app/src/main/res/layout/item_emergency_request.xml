@@ -20,11 +20,19 @@
             android:gravity="center_vertical">
 
             <TextView
+                android:id="@+id/tvPriority"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🚨"
-                android:textSize="20sp"
-                android:layout_marginEnd="12dp" />
+                android:layout_marginEnd="12dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="2dp"
+                android:paddingBottom="2dp"
+                android:background="#FFEBEE"
+                android:text="CRITICAL"
+                android:textColor="#D32F2F"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -60,16 +68,74 @@
                 android:textSize="11sp" />
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/tvEmergencyId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="#546E7A"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#546E7A"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvRequestStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="#0D3B66"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnAcceptRequest"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="@string/btn_accept_emergency"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#2E7D32"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                app:cornerRadius="8dp" />
+
+            <Button
+                android:id="@+id/btnRejectRequest"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Reject"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#E53935"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                app:cornerRadius="8dp" />
+        </LinearLayout>
+
         <Button
-            android:id="@+id/btnAcceptRequest"
+            android:id="@+id/btnDispatchAmbulance"
             android:layout_width="match_parent"
             android:layout_height="44dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/btn_accept_emergency"
+            android:layout_marginTop="8dp"
+            android:text="Dispatch ambulance"
             android:textColor="#FFFFFF"
-            android:backgroundTint="#E53935"
+            android:backgroundTint="#1E6FD9"
             android:textAllCaps="false"
             android:textStyle="bold"
+            android:visibility="gone"
             app:cornerRadius="8dp" />
 
     </LinearLayout>
